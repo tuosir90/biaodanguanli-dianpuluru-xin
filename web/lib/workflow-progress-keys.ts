@@ -1,0 +1,31 @@
+export const WORKFLOW_FLOW_PROGRESS_KEYS = [
+  "market_plan",
+  "category_opt",
+  "image_pack",
+  "new_store_privilege",
+  "window_display",
+  "video_sign",
+  "image_wall",
+  "dish_1_10",
+  "dish_11_20",
+  "dish_21_30",
+  "dish_31_40",
+  "dish_40_plus",
+  "campaign_plan",
+  "mt_detail",
+  "title_keyword",
+  "dish_desc",
+  "review_appeal",
+  "brand_story",
+  "coupon_marketing",
+  "weekly_report",
+  "store_score",
+  "new_product",
+  "paid_tuning",
+  "store_analysis",
+] as const;
+
+export const WORKFLOW_ALL_PROGRESS_KEYS = [
+  ...WORKFLOW_FLOW_PROGRESS_KEYS,
+  "daily_patrol",
+] as const;

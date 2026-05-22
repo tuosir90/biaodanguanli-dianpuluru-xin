@@ -8,10 +8,6 @@ import {
 import { connectMongo } from "@/lib/mongodb";
 import { clearReportReadCaches } from "@/lib/report-read-cache";
 import { resolveSalesCity } from "@/lib/sales-city";
-import {
-  applyWorkflowFlowLockToShops,
-  fetchWorkflowFlowLockLookup,
-} from "@/lib/workflow-flow-lock";
 import { clearWorkflowReadCaches } from "@/lib/workflow-read-cache";
 import { buildShopEmploymentStatusPatch } from "@/features/shops/employee-status";
 import { DropdownOption } from "@/models/dropdown-option";
@@ -96,13 +92,7 @@ export async function GET(request: NextRequest) {
       return { ...item, salesCity: normalizedSalesCity };
     });
 
-    const flowLockLookup = await fetchWorkflowFlowLockLookup(normalizedData);
-    const dataWithFlowLock = applyWorkflowFlowLockToShops(
-      normalizedData,
-      flowLockLookup
-    );
-
-    return NextResponse.json({ data: dataWithFlowLock, total, page, pageSize });
+    return NextResponse.json({ data: normalizedData, total, page, pageSize });
   } catch (error) {
     return NextResponse.json(
       {

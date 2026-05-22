@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectMongo } from "@/lib/mongodb";
-import { fetchWorkflowFlowLockLookup } from "@/lib/workflow-flow-lock";
 import { clearWorkflowToggleCaches } from "@/lib/workflow-read-cache";
 import { Shop } from "@/models/shop";
 import { WorkflowProgressLog } from "@/models/workflow-progress-log";
@@ -31,35 +30,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "参数不完整" }, { status: 400 });
     }
 
-    const shop = await Shop.findById(payload.shopId)
-      .select({
-        _id: 1,
-        merchantId: 1,
-        shopName: 1,
-        deliveryPlatform: 1,
-        contractSignedDate: 1,
-      })
-      .lean<{
-        _id: unknown;
-        merchantId?: string;
-        shopName?: string;
-        deliveryPlatform?: string;
-        contractSignedDate?: Date | string;
-      } | null>();
+    const shop = await Shop.findById(payload.shopId).select({ _id: 1 }).lean();
 
     if (!shop) {
       return NextResponse.json({ message: "店铺不存在" }, { status: 404 });
-    }
-
-    const flowLockLookup = await fetchWorkflowFlowLockLookup([shop]);
-    const lockedProgressKeys = new Set(
-      flowLockLookup[String(shop._id)]?.lockedProgressKeys ?? []
-    );
-    if (lockedProgressKeys.has(payload.progressKey)) {
-      return NextResponse.json(
-        { message: "当前店铺已锁定全店图流程" },
-        { status: 409 }
-      );
     }
 
     const now = new Date();

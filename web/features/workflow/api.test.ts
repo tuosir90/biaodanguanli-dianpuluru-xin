@@ -144,7 +144,7 @@ describe("workflow api query builders", () => {
   it("toggleWorkflowProgress 在接口失败时抛出后端错误信息", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: false,
-      json: async () => ({ message: "当前店铺已锁定全店图流程" }),
+      json: async () => ({ message: "更新失败" }),
     } as Response);
 
     await expect(
@@ -155,6 +155,6 @@ describe("workflow api query builders", () => {
         progressLabel: "菜品图（1-10张）",
         completed: true,
       })
-    ).rejects.toThrow("当前店铺已锁定全店图流程");
+    ).rejects.toThrow("更新失败");
   });
 });

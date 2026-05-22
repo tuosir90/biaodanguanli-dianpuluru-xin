@@ -8,7 +8,6 @@ import {
   getWorkflowFlowProgressKeys,
   getWorkflowFlowMetrics,
 } from "@/lib/workflow-flow-metrics";
-import { fetchWorkflowFlowLockLookup } from "@/lib/workflow-flow-lock";
 import { WORKFLOW_ALL_PROGRESS_KEYS, WORKFLOW_FLOW_PROGRESS_KEYS } from "@/lib/workflow-progress-keys";
 import { fetchWorkflowStatusSnapshotByShopIds } from "@/lib/workflow-status-snapshot";
 import {
@@ -92,10 +91,9 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
   }
 
   const shopIds = shops.map((shop) => shop._id);
-  const [snapshotMap, flowLockLookup, latestDailyPointLookup, todayFlowCompletedRows, latestLogs] =
+  const [snapshotMap, latestDailyPointLookup, todayFlowCompletedRows, latestLogs] =
     await Promise.all([
       fetchWorkflowStatusSnapshotByShopIds(shopIds, WORKFLOW_FLOW_PROGRESS_KEYS),
-      fetchWorkflowFlowLockLookup(shops),
       fetchLatestDailyPointShopLookup(),
       WorkflowProgressLog.aggregate<{ shopId?: unknown; progressKey?: string }>([
         {
@@ -175,25 +173,20 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
         todayDateKey
       );
       const snapshot = snapshotMap.get(String(shop._id));
-      const lockedProgressKeys = flowLockLookup[String(shop._id)]?.lockedProgressKeys ?? [];
       const requiredFlowKeys = new Set<string>(
-        getWorkflowFlowProgressKeys(shop.deliveryPlatform).filter(
-          (key) => !lockedProgressKeys.includes(key)
-        )
+        getWorkflowFlowProgressKeys(shop.deliveryPlatform)
       );
       const effectiveCompletedKeys = getWorkflowEffectiveCompletedKeys({
         deliveryPlatform: shop.deliveryPlatform,
         shopStatus: effectiveStatus,
         completedKeys: snapshot?.completedKeys,
         loggedKeys: snapshot?.loggedKeys,
-        lockedProgressKeys,
       });
       const metrics = getWorkflowFlowMetrics({
         deliveryPlatform: shop.deliveryPlatform,
         shopStatus: effectiveStatus,
         completedKeys: snapshot?.completedKeys,
         loggedKeys: snapshot?.loggedKeys,
-        lockedProgressKeys,
       });
       const todayCompletedFlowKeys = Array.from(
         todayCompletedKeyMap[String(shop._id)] ?? []
@@ -242,10 +235,6 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
         todayActionLabel: item.actionType === "flow" ? "今日需推进流程" : "今日需巡店标记",
         remainingCount: item.remainingCount,
         daysUnpatrolled: item.daysUnpatrolled,
-        flowLockedProgressKeys: flowLockLookup[item.shopId]?.lockedProgressKeys,
-        flowLockReasonText: flowLockLookup[item.shopId]?.reasonText,
-        flowLockAmount: flowLockLookup[item.shopId]?.totalAmount,
-        flowLockDateKeys: flowLockLookup[item.shopId]?.windowDateKeys,
       };
     })
     .filter((item) => !statusKeyword || item.shopStatus === statusKeyword)

@@ -9,10 +9,11 @@ describe("collectWorkflowOperators", () => {
   it("合并 overview 和明细里的运营并去重", () => {
     expect(
       collectWorkflowOperators({
-        overviewOperators: ["王涛", "王清月"],
+        overviewOperators: ["王涛", "王清月", "黄兆微"],
         detailShops: [
           { operatorName: "王涛" },
           { operatorName: "张玉莲" },
+          { operatorName: "黄兆微" },
           { operatorName: "" },
         ],
       })

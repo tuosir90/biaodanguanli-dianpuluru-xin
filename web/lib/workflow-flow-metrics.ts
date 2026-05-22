@@ -16,7 +16,6 @@ type WorkflowFlowMetricsParams = {
   shopStatus?: string | null;
   completedKeys?: Iterable<string>;
   loggedKeys?: Iterable<string>;
-  lockedProgressKeys?: Iterable<string>;
 };
 
 function toNormalizedSet(values?: Iterable<string>) {
@@ -46,16 +45,6 @@ export function getWorkflowFlowProgressKeys(deliveryPlatform?: string | null) {
 
   return WORKFLOW_FLOW_PROGRESS_KEYS.filter(
     (progressKey) => !ELEME_HIDDEN_PROGRESS_KEYS.has(progressKey)
-  );
-}
-
-function getRequiredWorkflowFlowProgressKeys(params: {
-  deliveryPlatform?: string | null;
-  lockedProgressKeys?: Iterable<string>;
-}) {
-  const lockedSet = toNormalizedSet(params.lockedProgressKeys);
-  return getWorkflowFlowProgressKeys(params.deliveryPlatform).filter(
-    (progressKey) => !lockedSet.has(progressKey)
   );
 }
 
@@ -93,14 +82,10 @@ export function getWorkflowEffectiveCompletedKeys({
   shopStatus,
   completedKeys,
   loggedKeys,
-  lockedProgressKeys,
 }: WorkflowFlowMetricsParams) {
   const completedSet = toNormalizedSet(completedKeys);
   const loggedSet = toNormalizedSet(loggedKeys);
-  const flowKeys = getRequiredWorkflowFlowProgressKeys({
-    deliveryPlatform,
-    lockedProgressKeys,
-  });
+  const flowKeys = getWorkflowFlowProgressKeys(deliveryPlatform);
   const isElemeShop = String(deliveryPlatform ?? "").includes("饿了么");
   const isNewShop = String(shopStatus ?? "").trim() === "新店";
 
@@ -133,18 +118,13 @@ export function getWorkflowFlowMetrics({
   shopStatus,
   completedKeys,
   loggedKeys,
-  lockedProgressKeys,
 }: WorkflowFlowMetricsParams) {
-  const flowKeys = getRequiredWorkflowFlowProgressKeys({
-    deliveryPlatform,
-    lockedProgressKeys,
-  });
+  const flowKeys = getWorkflowFlowProgressKeys(deliveryPlatform);
   const completedSet = getWorkflowEffectiveCompletedKeys({
     deliveryPlatform,
     shopStatus,
     completedKeys,
     loggedKeys,
-    lockedProgressKeys,
   });
 
   const completedCount = flowKeys.filter((progressKey) =>

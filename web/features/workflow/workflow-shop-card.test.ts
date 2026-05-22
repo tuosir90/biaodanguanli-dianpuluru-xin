@@ -66,7 +66,7 @@ describe("WorkflowShopCard", () => {
     expect(html).not.toContain("签约日起5天内自动标记新店");
   });
 
-  it("低回款锁定全店图时显示提示并禁用5个菜品图标签", () => {
+  it("正常店铺不显示低回款锁定提示，也不禁用菜品图标签", () => {
     const html = renderToStaticMarkup(
       createElement(WorkflowShopCard, {
         ...baseProps,
@@ -80,20 +80,13 @@ describe("WorkflowShopCard", () => {
           contractSignedDate: "2026-03-03T00:00:00+08:00",
           deliveryPlatform: "美团餐饮",
           shopStatus: "正常",
-          flowLockedProgressKeys: [
-            "dish_1_10",
-            "dish_11_20",
-            "dish_21_30",
-            "dish_31_40",
-            "dish_40_plus",
-          ],
-          flowLockReasonText: "签约次日起连续4天总回款 0.80 元，低于 1 元，已锁定全店图",
         },
       })
     );
 
-    expect(html).toContain("签约次日起连续4天总回款 0.80 元，低于 1 元，已锁定全店图");
-    expect((html.match(/disabled=""/g) ?? []).length).toBe(5);
+    expect(html).not.toContain("已锁定全店图");
+    expect(html).not.toContain("菜品图 5 项不计入完整流程");
+    expect((html.match(/disabled=""/g) ?? []).length).toBe(0);
   });
 
   it("外卖活动方案排在全店图标签前面", () => {

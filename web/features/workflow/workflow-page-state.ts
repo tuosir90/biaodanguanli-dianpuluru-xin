@@ -2,8 +2,14 @@ type WorkflowOperatorShopLite = {
   operatorName?: string | null;
 };
 
+const WORKFLOW_RETIRED_OPERATOR_NAMES = new Set(["黄兆微"]);
+
 function isNonEmptyOperatorName(value: string | null | undefined): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function isActiveWorkflowOperatorName(value: string | null | undefined): value is string {
+  return isNonEmptyOperatorName(value) && !WORKFLOW_RETIRED_OPERATOR_NAMES.has(value.trim());
 }
 
 type CollectWorkflowOperatorsParams = {
@@ -35,8 +41,8 @@ export function collectWorkflowOperators({
 }: CollectWorkflowOperatorsParams) {
   return Array.from(
     new Set([
-      ...overviewOperators,
-      ...detailShops.map((item) => item.operatorName).filter(isNonEmptyOperatorName),
+      ...overviewOperators.filter(isActiveWorkflowOperatorName),
+      ...detailShops.map((item) => item.operatorName).filter(isActiveWorkflowOperatorName),
     ])
   );
 }

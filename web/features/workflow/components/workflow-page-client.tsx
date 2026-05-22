@@ -138,7 +138,6 @@ export function WorkflowPageClient() {
         deliveryPlatform: shop.deliveryPlatform,
         shopStatus: shop.shopStatus,
         completedKeys,
-        lockedProgressKeys: shop.flowLockedProgressKeys,
       });
     });
     return map;

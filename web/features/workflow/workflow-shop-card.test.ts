@@ -188,6 +188,7 @@ describe("WorkflowShopCard", () => {
     expect(html).toContain("以下标签需同天完成");
     expect(html).toContain("分类栏优化 + 图片三件套");
     expect(html).toContain("开启新店特权 + 视频店招");
+    expect(html).toContain("图片墙制作 + 外卖活动方案");
     expect(html).toContain("两个都标记后，店铺才会移出今日任务");
     expect(html).toContain("border-sky-200 bg-sky-50 text-sky-800");
     expect(html).toContain("border-teal-200 bg-teal-50 text-teal-800");
@@ -216,6 +217,7 @@ describe("WorkflowShopCard", () => {
     expect(html).toContain("以下标签需同天完成");
     expect(html).toContain("分类栏优化 + 图片三件套");
     expect(html).toContain("开启新店特权 + 视频店招");
+    expect(html).toContain("橱窗展示 + 外卖活动方案");
     expect(html).not.toContain("开启新店特权 + 橱窗展示");
     expect(html).toContain("border-sky-200 bg-sky-50 text-sky-800");
     expect(html).toContain("border-teal-200 bg-teal-50 text-teal-800");

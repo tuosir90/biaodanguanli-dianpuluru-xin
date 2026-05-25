@@ -47,6 +47,26 @@ describe("isWorkflowFlowTaskCompletedToday", () => {
     ).toBe(false);
   });
 
+  it("饿了么橱窗展示和外卖活动方案当天只完成一个时，今日任务仍未完成", () => {
+    expect(
+      isWorkflowFlowTaskCompletedToday({
+        deliveryPlatform: "饿了么餐饮",
+        incompleteFlowKeys: ["window_display", "campaign_plan"],
+        todayCompletedFlowKeys: ["window_display"],
+      })
+    ).toBe(false);
+  });
+
+  it("美团图片墙制作和外卖活动方案当天只完成一个时，今日任务仍未完成", () => {
+    expect(
+      isWorkflowFlowTaskCompletedToday({
+        deliveryPlatform: "美团餐饮",
+        incompleteFlowKeys: ["image_wall", "campaign_plan"],
+        todayCompletedFlowKeys: ["campaign_plan"],
+      })
+    ).toBe(false);
+  });
+
   it("没有命中成对规则时，今天完成任意一个流程就算完成今日任务", () => {
     expect(
       isWorkflowFlowTaskCompletedToday({

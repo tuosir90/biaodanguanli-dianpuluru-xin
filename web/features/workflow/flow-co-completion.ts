@@ -20,12 +20,22 @@ const MEITUAN_WORKFLOW_FLOW_CO_COMPLETION_GROUPS: WorkflowFlowCoCompletionGroup[
     label: "开启新店特权 + 视频店招",
     tone: "teal",
   },
+  {
+    keys: ["image_wall", "campaign_plan"],
+    label: "图片墙制作 + 外卖活动方案",
+    tone: "teal",
+  },
 ];
 
 const ELEME_WORKFLOW_FLOW_CO_COMPLETION_GROUPS: WorkflowFlowCoCompletionGroup[] = [
   {
     keys: ["new_store_privilege", "video_sign"],
     label: "开启新店特权 + 视频店招",
+    tone: "teal",
+  },
+  {
+    keys: ["window_display", "campaign_plan"],
+    label: "橱窗展示 + 外卖活动方案",
     tone: "teal",
   },
 ];

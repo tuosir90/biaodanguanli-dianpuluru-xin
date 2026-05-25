@@ -1,4 +1,4 @@
-export type WorkflowFlowCoCompletionTone = "sky" | "teal";
+export type WorkflowFlowCoCompletionTone = "sky" | "teal" | "amber";
 
 export type WorkflowFlowCoCompletionGroup = {
   keys: string[];
@@ -23,7 +23,7 @@ const MEITUAN_WORKFLOW_FLOW_CO_COMPLETION_GROUPS: WorkflowFlowCoCompletionGroup[
   {
     keys: ["image_wall", "campaign_plan"],
     label: "图片墙制作 + 外卖活动方案",
-    tone: "teal",
+    tone: "amber",
   },
 ];
 
@@ -36,13 +36,24 @@ const ELEME_WORKFLOW_FLOW_CO_COMPLETION_GROUPS: WorkflowFlowCoCompletionGroup[] 
   {
     keys: ["window_display", "campaign_plan"],
     label: "橱窗展示 + 外卖活动方案",
-    tone: "teal",
+    tone: "amber",
   },
 ];
 
 export function getWorkflowFlowCoCompletionToneClasses(
   tone: WorkflowFlowCoCompletionTone
 ) {
+  if (tone === "amber") {
+    return {
+      notice:
+        "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200",
+      chip:
+        "bg-white/80 text-amber-700 dark:bg-bg-100/70 dark:text-amber-200",
+      button:
+        "border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200",
+    };
+  }
+
   if (tone === "teal") {
     return {
       notice:

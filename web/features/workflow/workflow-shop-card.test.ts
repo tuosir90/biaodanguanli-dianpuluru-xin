@@ -192,8 +192,10 @@ describe("WorkflowShopCard", () => {
     expect(html).toContain("两个都标记后，店铺才会移出今日任务");
     expect(html).toContain("border-sky-200 bg-sky-50 text-sky-800");
     expect(html).toContain("border-teal-200 bg-teal-50 text-teal-800");
+    expect(html).toContain("border-amber-200 bg-amber-50 text-amber-800");
     expect(html).toContain("border-sky-300 bg-sky-50 text-sky-700");
     expect(html).toContain("border-teal-300 bg-teal-50 text-teal-700");
+    expect(html).toContain("border-amber-300 bg-amber-50 text-amber-700");
   });
 
   it("饿了么店铺会醒目提示今日需同天完成的成对流程", () => {
@@ -221,5 +223,7 @@ describe("WorkflowShopCard", () => {
     expect(html).not.toContain("开启新店特权 + 橱窗展示");
     expect(html).toContain("border-sky-200 bg-sky-50 text-sky-800");
     expect(html).toContain("border-teal-200 bg-teal-50 text-teal-800");
+    expect(html).toContain("border-amber-200 bg-amber-50 text-amber-800");
+    expect(html).toContain("border-amber-300 bg-amber-50 text-amber-700");
   });
 });

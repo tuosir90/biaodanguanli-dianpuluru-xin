@@ -11,6 +11,7 @@ import {
 import {
   getPendingWorkflowFlowCoCompletionGroups,
   getWorkflowFlowCoCompletionToneClasses,
+  type WorkflowFlowCoCompletionTone,
 } from "../flow-co-completion";
 import { getWorkflowFlowProgressKeys } from "@/lib/workflow-flow-metrics";
 import type { PatrolStatusItem, ShopFlowMetrics, ShopItem } from "../types";
@@ -102,7 +103,7 @@ function WorkflowShopCardBase({
     deliveryPlatform: shop.deliveryPlatform,
     incompleteFlowKeys,
   });
-  const pendingCoCompletionToneByKey = new Map<string, "sky" | "teal">();
+  const pendingCoCompletionToneByKey = new Map<string, WorkflowFlowCoCompletionTone>();
   pendingCoCompletionGroups.forEach((group) => {
     group.keys.forEach((progressKey) => {
       pendingCoCompletionToneByKey.set(progressKey, group.tone);

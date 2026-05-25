@@ -41,7 +41,8 @@ describe("getWorkflowFlowMetrics", () => {
     expect(metrics.totalProgressCount).toBe(23);
   });
 
-  it("饿了么店铺会排除隐藏流程项", () => {
+  it("饿了么店铺包含视频店招并排除其他隐藏流程项", () => {
+    const flowKeys = getWorkflowFlowProgressKeys("饿了么餐饮");
     const metrics = getWorkflowFlowMetrics({
       deliveryPlatform: "饿了么餐饮",
       shopStatus: "正常",
@@ -49,14 +50,19 @@ describe("getWorkflowFlowMetrics", () => {
       loggedKeys: [],
     });
 
-    expect(metrics.totalProgressCount).toBe(20);
-    expect(metrics.remainingCount).toBe(20);
+    expect(flowKeys).toContain("video_sign");
+    expect(flowKeys).not.toContain("image_wall");
+    expect(flowKeys).not.toContain("mt_detail");
+    expect(flowKeys).not.toContain("brand_story");
+    expect(metrics.totalProgressCount).toBe(21);
+    expect(metrics.remainingCount).toBe(21);
   });
 
-  it("饿了么已完成店铺会默认补标橱窗展示和店铺分解析", () => {
+  it("饿了么已完成店铺会默认补标视频店招、橱窗展示和店铺分解析", () => {
     const elemeKeys = getWorkflowFlowProgressKeys("饿了么餐饮");
     const baselineKeys = elemeKeys.filter(
-      (key) => !["window_display", "store_score", "new_store_privilege"].includes(key)
+      (key) =>
+        !["video_sign", "window_display", "store_score", "new_store_privilege"].includes(key)
     );
 
     const completedSet = getWorkflowEffectiveCompletedKeys({
@@ -66,15 +72,19 @@ describe("getWorkflowFlowMetrics", () => {
       loggedKeys: baselineKeys,
     });
 
+    expect(completedSet.has("video_sign")).toBe(true);
     expect(completedSet.has("window_display")).toBe(true);
     expect(completedSet.has("store_score")).toBe(true);
     expect(completedSet.has("new_store_privilege")).toBe(true);
   });
 
-  it("饿了么未完成店铺不会默认补标橱窗展示和店铺分解析", () => {
+  it("饿了么未完成店铺不会默认补标视频店招、橱窗展示和店铺分解析", () => {
     const elemeKeys = getWorkflowFlowProgressKeys("饿了么餐饮");
     const baselineKeys = elemeKeys
-      .filter((key) => !["window_display", "store_score", "new_store_privilege"].includes(key))
+      .filter(
+        (key) =>
+          !["video_sign", "window_display", "store_score", "new_store_privilege"].includes(key)
+      )
       .slice(0, -1);
 
     const completedSet = getWorkflowEffectiveCompletedKeys({
@@ -84,6 +94,7 @@ describe("getWorkflowFlowMetrics", () => {
       loggedKeys: baselineKeys,
     });
 
+    expect(completedSet.has("video_sign")).toBe(false);
     expect(completedSet.has("window_display")).toBe(false);
     expect(completedSet.has("store_score")).toBe(false);
     expect(completedSet.has("new_store_privilege")).toBe(false);

@@ -24,8 +24,8 @@ const MEITUAN_WORKFLOW_FLOW_CO_COMPLETION_GROUPS: WorkflowFlowCoCompletionGroup[
 
 const ELEME_WORKFLOW_FLOW_CO_COMPLETION_GROUPS: WorkflowFlowCoCompletionGroup[] = [
   {
-    keys: ["new_store_privilege", "window_display"],
-    label: "开启新店特权 + 橱窗展示",
+    keys: ["new_store_privilege", "video_sign"],
+    label: "开启新店特权 + 视频店招",
     tone: "teal",
   },
 ];

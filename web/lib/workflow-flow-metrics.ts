@@ -2,13 +2,12 @@ import { WORKFLOW_FLOW_PROGRESS_KEYS } from "@/lib/workflow-progress-keys";
 
 const MEITUAN_HIDDEN_PROGRESS_KEYS = new Set(["window_display"]);
 const ELEME_HIDDEN_PROGRESS_KEYS = new Set([
-  "video_sign",
   "image_wall",
   "mt_detail",
   "brand_story",
 ]);
 
-const ELEME_DEFAULT_COMPLETED_PROGRESS_KEYS = ["window_display", "store_score"] as const;
+const ELEME_DEFAULT_COMPLETED_PROGRESS_KEYS = ["video_sign", "window_display", "store_score"] as const;
 const LEGACY_DEFAULT_COMPLETED_PROGRESS_KEYS = ["new_store_privilege"] as const;
 
 type WorkflowFlowMetricsParams = {

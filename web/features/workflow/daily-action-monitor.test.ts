@@ -37,12 +37,12 @@ describe("isWorkflowFlowTaskCompletedToday", () => {
     ).toBe(false);
   });
 
-  it("饿了么开启新店特权和橱窗展示当天只完成一个时，今日任务仍未完成", () => {
+  it("饿了么开启新店特权和视频店招当天只完成一个时，今日任务仍未完成", () => {
     expect(
       isWorkflowFlowTaskCompletedToday({
         deliveryPlatform: "饿了么餐饮",
-        incompleteFlowKeys: ["new_store_privilege", "window_display"],
-        todayCompletedFlowKeys: ["window_display"],
+        incompleteFlowKeys: ["new_store_privilege", "video_sign"],
+        todayCompletedFlowKeys: ["video_sign"],
       })
     ).toBe(false);
   });

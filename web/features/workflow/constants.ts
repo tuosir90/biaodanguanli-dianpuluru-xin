@@ -14,8 +14,8 @@ export const progressItems: ProgressItem[] = [
   { key: "category_opt", label: "分类栏优化" },
   { key: "image_pack", label: "图片三件套" },
   { key: "new_store_privilege", label: "开启新店特权" },
-  { key: "window_display", label: "橱窗展示" },
   { key: "video_sign", label: "视频店招" },
+  { key: "window_display", label: "橱窗展示" },
   { key: "image_wall", label: "图片墙制作" },
   { key: "campaign_plan", label: "外卖活动方案" },
   { key: "dish_1_10", label: "菜品图（1-10张）" },
@@ -38,7 +38,6 @@ export const progressItems: ProgressItem[] = [
 ];
 
 export const ELEME_HIDDEN_PROGRESS_KEYS = new Set([
-  "video_sign",
   "image_wall",
   "mt_detail",
   "brand_story",

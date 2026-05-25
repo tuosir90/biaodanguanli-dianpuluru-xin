@@ -138,7 +138,7 @@ describe("WorkflowShopCard", () => {
     );
   });
 
-  it("饿了么店铺把开启新店特权放在图片三件套后、橱窗展示前", () => {
+  it("饿了么店铺展示视频店招，并放在开启新店特权后、橱窗展示前", () => {
     const html = renderToStaticMarkup(
       createElement(WorkflowShopCard, {
         ...baseProps,
@@ -160,6 +160,9 @@ describe("WorkflowShopCard", () => {
       html.indexOf("开启新店特权")
     );
     expect(html.indexOf("开启新店特权")).toBeLessThan(
+      html.indexOf("视频店招")
+    );
+    expect(html.indexOf("视频店招")).toBeLessThan(
       html.indexOf("橱窗展示")
     );
   });
@@ -212,8 +215,8 @@ describe("WorkflowShopCard", () => {
 
     expect(html).toContain("以下标签需同天完成");
     expect(html).toContain("分类栏优化 + 图片三件套");
-    expect(html).toContain("开启新店特权 + 橱窗展示");
-    expect(html).not.toContain("开启新店特权 + 视频店招");
+    expect(html).toContain("开启新店特权 + 视频店招");
+    expect(html).not.toContain("开启新店特权 + 橱窗展示");
     expect(html).toContain("border-sky-200 bg-sky-50 text-sky-800");
     expect(html).toContain("border-teal-200 bg-teal-50 text-teal-800");
   });

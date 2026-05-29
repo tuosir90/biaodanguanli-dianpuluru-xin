@@ -9,12 +9,13 @@ import {
   FileEdit,
   FileSpreadsheet,
   KanbanSquare,
+  Trophy,
 } from "lucide-react";
 import { APP_SIDEBAR_CLASS } from "@/lib/app-layout-classes";
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-const menuItems = [
+export const appSidebarMenuItems = [
   { href: "/shops/new", label: "店铺录入", icon: FileEdit },
   { href: "/shops", label: "店铺数据展示", icon: ClipboardList },
   { href: "/stats", label: "数据统计", icon: BarChart3 },
@@ -26,6 +27,7 @@ const menuItems = [
   { href: "/daily-point/sales-invalid-shops", label: "销售无效店铺统计", icon: FileSpreadsheet },
   { href: "/daily-point/wuhan-sales-stats", label: "武汉销售数据统计", icon: FileSpreadsheet },
   { href: "/online-shop-stats", label: "在线店铺数统计", icon: Activity },
+  { href: "/premium-shops", label: "优质店铺列表", icon: Trophy },
 ];
 
 export function AppSidebar() {
@@ -48,7 +50,7 @@ export function AppSidebar() {
         </div>
       </div>
       <nav className="space-y-1.5 flex-1">
-        {menuItems.map(({ href, label, icon: Icon }) => {
+        {appSidebarMenuItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
 
           return (

@@ -5,6 +5,10 @@ import {
   isWithinNewShopCycle,
   parsePositiveInt,
 } from "@/lib/shop-query";
+import {
+  applyLatestDailyPointAmountToShops,
+  fetchLatestDailyPointShopLookup,
+} from "@/lib/latest-daily-point-shops";
 import { connectMongo } from "@/lib/mongodb";
 import { clearReportReadCaches } from "@/lib/report-read-cache";
 import { resolveSalesCity } from "@/lib/sales-city";
@@ -62,6 +66,7 @@ export async function GET(request: NextRequest) {
       MAX_PAGE_SIZE
     );
     const filter = buildShopFilter(searchParams);
+    const includeLatestDailyPoint = searchParams.get("includeLatestDailyPoint") === "1";
 
     const [data, total] = await Promise.all([
       Shop.find(filter)
@@ -91,8 +96,14 @@ export async function GET(request: NextRequest) {
       }
       return { ...item, salesCity: normalizedSalesCity };
     });
+    const responseData = includeLatestDailyPoint
+      ? applyLatestDailyPointAmountToShops(
+          normalizedData,
+          await fetchLatestDailyPointShopLookup()
+        )
+      : normalizedData;
 
-    return NextResponse.json({ data: normalizedData, total, page, pageSize });
+    return NextResponse.json({ data: responseData, total, page, pageSize });
   } catch (error) {
     return NextResponse.json(
       {

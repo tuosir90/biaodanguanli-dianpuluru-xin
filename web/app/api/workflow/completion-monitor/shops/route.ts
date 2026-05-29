@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectMongo } from "@/lib/mongodb";
+import {
+  applyLatestDailyPointAmountToShops,
+  fetchLatestDailyPointShopLookup,
+} from "@/lib/latest-daily-point-shops";
 import { buildRateLimitHeaders, checkRouteRateLimit } from "@/lib/request-rate-limit";
 import { getWorkflowFlowMetrics } from "@/lib/workflow-flow-metrics";
 import {
@@ -149,12 +153,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const [snapshotMap, flowLockLookup] = await Promise.all([
+    const [snapshotMap, flowLockLookup, latestDailyPointLookup] = await Promise.all([
       fetchWorkflowStatusSnapshotByShopIds(
         shops.map((shop) => shop._id),
         WORKFLOW_FLOW_PROGRESS_KEYS
       ),
       fetchWorkflowFlowLockLookup(shops),
+      fetchLatestDailyPointShopLookup(),
     ]);
 
     const pendingShops = shops
@@ -201,7 +206,10 @@ export async function GET(request: NextRequest) {
       ...shop,
       _id: String(shop._id),
     }));
-    const data = applyWorkflowFlowLockToShops(pagedShops, flowLockLookup);
+    const data = applyLatestDailyPointAmountToShops(
+      applyWorkflowFlowLockToShops(pagedShops, flowLockLookup),
+      latestDailyPointLookup
+    );
 
     return NextResponse.json(
       { data, total, page, pageSize },

@@ -20,6 +20,8 @@ export type ShopItem = {
   flowLockReasonText?: string;
   flowLockAmount?: number;
   flowLockDateKeys?: string[];
+  latestDailyPointAmount?: number;
+  latestDailyPointDateKey?: string;
 };
 
 export type PatrolStatusItem = {

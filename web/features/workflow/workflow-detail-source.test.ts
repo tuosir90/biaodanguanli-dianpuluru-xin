@@ -66,4 +66,16 @@ describe("resolveWorkflowDetailSource", () => {
       }),
     });
   });
+
+  it("默认店铺列表会请求最新回款金额", () => {
+    expect(
+      buildWorkflowDefaultShopsQuery({
+        detailPage: 1,
+        selectedOperator: "__ALL__",
+        shopNameKeyword: "",
+        merchantIdKeyword: "",
+        statusKeyword: "",
+      })
+    ).toContain("includeLatestDailyPoint=1");
+  });
 });

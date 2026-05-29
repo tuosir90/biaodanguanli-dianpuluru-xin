@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyLatestDailyPointAmountToShops,
   buildLatestDailyPointWindowDateKeys,
   buildLatestDailyPointShopLookup,
+  getLatestDailyPointAmountInfo,
   pickLatestDailyPointDateKey,
 } from "@/lib/latest-daily-point-shops";
 
@@ -49,5 +51,61 @@ describe("buildLatestDailyPointShopLookup", () => {
     expect(lookup.merchantIds.has("m-1")).toBe(true);
     expect(lookup.storeIds.has("s-1")).toBe(true);
     expect(lookup.shopNames.has("店铺A")).toBe(true);
+  });
+
+  it("按商家ID优先返回店铺最新回款金额和日期", () => {
+    const lookup = buildLatestDailyPointShopLookup([
+      {
+        merchantId: "m-2",
+        storeId: "s-2",
+        shopName: "店铺B",
+        recordDateKey: "2026-03-06",
+        amountValue: 8,
+      },
+      {
+        merchantId: "m-2",
+        storeId: "s-2",
+        shopName: "店铺B",
+        recordDateKey: "2026-03-07",
+        amountValue: 12.345,
+      },
+    ]);
+
+    expect(
+      getLatestDailyPointAmountInfo(lookup, {
+        merchantId: "m-2",
+        shopName: "店铺B",
+      })
+    ).toEqual({
+      amount: 12.35,
+      dateKey: "2026-03-07",
+    });
+  });
+
+  it("商家ID未命中时按店铺名补充最新回款字段", () => {
+    const lookup = buildLatestDailyPointShopLookup([
+      {
+        merchantId: "m-3",
+        storeId: "s-3",
+        shopName: "店铺C",
+        recordDateKey: "2026-03-07",
+        amountValue: 0,
+      },
+    ]);
+
+    expect(
+      applyLatestDailyPointAmountToShops(
+        [{ _id: "shop-3", merchantId: "missing", shopName: "店铺C" }],
+        lookup
+      )
+    ).toEqual([
+      {
+        _id: "shop-3",
+        merchantId: "missing",
+        shopName: "店铺C",
+        latestDailyPointAmount: 0,
+        latestDailyPointDateKey: "2026-03-07",
+      },
+    ]);
   });
 });

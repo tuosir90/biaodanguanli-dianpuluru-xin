@@ -3,6 +3,10 @@ import { buildRateLimitHeaders, checkRouteRateLimit } from "@/lib/request-rate-l
 import { connectMongo } from "@/lib/mongodb";
 import { RECENT_SIGNED_WINDOW_DAYS, RECENT_SIGNED_WINDOW_LABEL } from "@/features/workflow/constants";
 import {
+  applyLatestDailyPointAmountToShops,
+  fetchLatestDailyPointShopLookup,
+} from "@/lib/latest-daily-point-shops";
+import {
   applyWorkflowFlowLockToShops,
   fetchWorkflowFlowLockLookup,
 } from "@/lib/workflow-flow-lock";
@@ -198,8 +202,14 @@ export async function GET(request: NextRequest) {
       ...shop,
       _id: String(shop._id),
     }));
-    const flowLockLookup = await fetchWorkflowFlowLockLookup(pagedShops);
-    const data = applyWorkflowFlowLockToShops(pagedShops, flowLockLookup);
+    const [flowLockLookup, latestDailyPointLookup] = await Promise.all([
+      fetchWorkflowFlowLockLookup(pagedShops),
+      fetchLatestDailyPointShopLookup(),
+    ]);
+    const data = applyLatestDailyPointAmountToShops(
+      applyWorkflowFlowLockToShops(pagedShops, flowLockLookup),
+      latestDailyPointLookup
+    );
 
     return NextResponse.json(
       { data, total, page, pageSize },

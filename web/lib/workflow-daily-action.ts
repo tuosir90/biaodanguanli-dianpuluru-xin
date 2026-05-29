@@ -2,7 +2,11 @@ import {
   buildWorkflowDailyActionItems,
   isWorkflowFlowTaskCompletedToday,
 } from "@/features/workflow/daily-action-monitor";
-import { fetchLatestDailyPointShopLookup, matchesLatestDailyPointShop } from "@/lib/latest-daily-point-shops";
+import {
+  fetchLatestDailyPointShopLookup,
+  getLatestDailyPointAmountInfo,
+  matchesLatestDailyPointShop,
+} from "@/lib/latest-daily-point-shops";
 import {
   getWorkflowEffectiveCompletedKeys,
   getWorkflowFlowProgressKeys,
@@ -45,6 +49,8 @@ export type WorkflowDailyActionShopItem = ShopLite & {
   todayActionLabel: string;
   remainingCount: number;
   daysUnpatrolled: number | null;
+  latestDailyPointAmount?: number;
+  latestDailyPointDateKey?: string;
 };
 
 export async function fetchWorkflowDailyActionShopItems(params?: {
@@ -234,6 +240,13 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
         shop.contractSignedDate,
         todayDateKey
       );
+      const latestDailyPointAmountInfo = getLatestDailyPointAmountInfo(
+        latestDailyPointLookup,
+        {
+          merchantId: shop.merchantId,
+          shopName: shop.shopName,
+        }
+      );
       return {
         ...shop,
         _id: item.shopId,
@@ -246,6 +259,8 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
         flowLockReasonText: flowLockLookup[item.shopId]?.reasonText,
         flowLockAmount: flowLockLookup[item.shopId]?.totalAmount,
         flowLockDateKeys: flowLockLookup[item.shopId]?.windowDateKeys,
+        latestDailyPointAmount: latestDailyPointAmountInfo?.amount,
+        latestDailyPointDateKey: latestDailyPointAmountInfo?.dateKey,
       };
     })
     .filter((item) => !statusKeyword || item.shopStatus === statusKeyword)

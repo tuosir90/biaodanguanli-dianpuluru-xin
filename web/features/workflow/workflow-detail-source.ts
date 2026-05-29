@@ -40,6 +40,7 @@ export function buildWorkflowDefaultShopsQuery({
     shopNameKeyword,
     merchantIdKeyword,
     statusKeyword,
+    includeLatestDailyPoint: true,
   });
 }
 

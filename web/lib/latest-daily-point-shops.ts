@@ -8,6 +8,13 @@ type LatestDailyPointShopRow = {
   merchantId?: string;
   storeId?: string;
   shopName?: string;
+  recordDateKey?: string;
+  amountValue?: number;
+};
+
+export type LatestDailyPointAmountInfo = {
+  amount: number;
+  dateKey: string;
 };
 
 export type LatestDailyPointShopLookup = {
@@ -15,6 +22,8 @@ export type LatestDailyPointShopLookup = {
   merchantIds: Set<string>;
   storeIds: Set<string>;
   shopNames: Set<string>;
+  amountInfoById: Map<string, LatestDailyPointAmountInfo>;
+  amountInfoByShopName: Map<string, LatestDailyPointAmountInfo>;
 };
 
 export function pickLatestDailyPointDateKey(dateKeys: Array<string | null | undefined>) {
@@ -30,6 +39,39 @@ export function buildLatestDailyPointWindowDateKeys(latestDateKey: string) {
   return buildConsecutiveDateKeys(latestDateKey, LATEST_DAILY_POINT_WINDOW_DAYS);
 }
 
+function roundToTwo(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function toFiniteNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function upsertLatestAmountInfo(
+  map: Map<string, LatestDailyPointAmountInfo>,
+  key: string,
+  row: LatestDailyPointShopRow
+) {
+  if (!key) return;
+  const dateKey = normalizeDateKey(row.recordDateKey);
+  if (!dateKey) return;
+
+  const amount = roundToTwo(toFiniteNumber(row.amountValue));
+  const current = map.get(key);
+  if (!current || dateKey > current.dateKey) {
+    map.set(key, { amount, dateKey });
+    return;
+  }
+
+  if (dateKey === current.dateKey) {
+    map.set(key, {
+      amount: roundToTwo(current.amount + amount),
+      dateKey,
+    });
+  }
+}
+
 export function buildLatestDailyPointShopLookup(
   rows: LatestDailyPointShopRow[],
   latestDateKey = ""
@@ -37,6 +79,8 @@ export function buildLatestDailyPointShopLookup(
   const merchantIds = new Set<string>();
   const storeIds = new Set<string>();
   const shopNames = new Set<string>();
+  const amountInfoById = new Map<string, LatestDailyPointAmountInfo>();
+  const amountInfoByShopName = new Map<string, LatestDailyPointAmountInfo>();
 
   rows.forEach((row) => {
     const merchantId = normalizeText(row.merchantId);
@@ -52,6 +96,11 @@ export function buildLatestDailyPointShopLookup(
     if (shopName) {
       shopNames.add(shopName);
     }
+
+    Array.from(new Set([merchantId, storeId].filter(Boolean))).forEach((id) => {
+      upsertLatestAmountInfo(amountInfoById, id, row);
+    });
+    upsertLatestAmountInfo(amountInfoByShopName, shopName, row);
   });
 
   return {
@@ -59,6 +108,8 @@ export function buildLatestDailyPointShopLookup(
     merchantIds,
     storeIds,
     shopNames,
+    amountInfoById,
+    amountInfoByShopName,
   };
 }
 
@@ -76,7 +127,7 @@ export async function fetchLatestDailyPointShopLookup() {
   const rows = await DailyPointDetail.find({
     recordDateKey: { $in: matchedDateKeys },
   })
-    .select({ _id: 0, merchantId: 1, storeId: 1, shopName: 1 })
+    .select({ _id: 0, merchantId: 1, storeId: 1, shopName: 1, recordDateKey: 1, amountValue: 1 })
     .lean<LatestDailyPointShopRow[]>();
 
   return buildLatestDailyPointShopLookup(rows, latestDateKey);
@@ -101,4 +152,43 @@ export function matchesLatestDailyPointShop(
   }
 
   return false;
+}
+
+export function getLatestDailyPointAmountInfo(
+  lookup: LatestDailyPointShopLookup,
+  shop: {
+    merchantId?: string | null;
+    shopName?: string | null;
+  }
+) {
+  const merchantId = normalizeText(shop.merchantId);
+  const shopName = normalizeText(shop.shopName);
+
+  if (merchantId) {
+    const matchedById = lookup.amountInfoById.get(merchantId);
+    if (matchedById) return matchedById;
+  }
+
+  if (shopName) {
+    return lookup.amountInfoByShopName.get(shopName) ?? null;
+  }
+
+  return null;
+}
+
+export function applyLatestDailyPointAmountToShops<
+  T extends { merchantId?: string | null; shopName?: string | null },
+>(shops: T[], lookup: LatestDailyPointShopLookup) {
+  return shops.map((shop) => {
+    const amountInfo = getLatestDailyPointAmountInfo(lookup, shop);
+    if (!amountInfo) {
+      return shop;
+    }
+
+    return {
+      ...shop,
+      latestDailyPointAmount: amountInfo.amount,
+      latestDailyPointDateKey: amountInfo.dateKey,
+    };
+  });
 }

@@ -23,6 +23,35 @@ import {
   todayDateValue,
 } from "../utils";
 
+const SHANGHAI_DATE_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Shanghai",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+function parseDateKey(dateKey: string) {
+  const matched = dateKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!matched) return null;
+  return new Date(Date.UTC(Number(matched[1]), Number(matched[2]) - 1, Number(matched[3])));
+}
+
+function formatShanghaiDateKey(dateValue?: string) {
+  if (!dateValue) return "";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return SHANGHAI_DATE_FORMATTER.format(parsed);
+}
+
+function calculateCooperationDays(contractSignedDate?: string, updatedDateKey?: string) {
+  const startDate = parseDateKey(formatShanghaiDateKey(contractSignedDate));
+  const endDate = parseDateKey(updatedDateKey || "");
+  if (!startDate || !endDate) return null;
+  const diffMs = endDate.getTime() - startDate.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return Math.max(diffDays, 0) + 1;
+}
+
 type WorkflowShopCardProps = {
   shop: ShopItem;
   copiedShopId: string | null;
@@ -137,6 +166,15 @@ function WorkflowShopCardBase({
     typeof shop.dailyPointTotalAmount === "number" &&
     Number.isFinite(shop.dailyPointTotalAmount);
   const dailyPointTotalAmount = hasDailyPointTotalAmount ? shop.dailyPointTotalAmount! : 0;
+  const cooperationDays = calculateCooperationDays(
+    shop.contractSignedDate,
+    shop.dailyPointTotalUpdatedDateKey
+  );
+  const averageDailyAmount =
+    cooperationDays && cooperationDays > 0
+      ? dailyPointTotalAmount / cooperationDays
+      : null;
+  const isAClassShop = dailyPointTotalAmount > 100 || (averageDailyAmount ?? 0) > 3;
   const dailyPointTotalAmountText = hasDailyPointTotalAmount
     ? `${(Math.round((dailyPointTotalAmount + Number.EPSILON) * 100) / 100).toFixed(2)} 元`
     : "0 元";
@@ -199,6 +237,11 @@ function WorkflowShopCardBase({
           </Button>
           {copiedShopId === shop._id ? (
             <span className="animate-fade-in text-xs text-green-600 dark:text-green-400">已复制</span>
+          ) : null}
+          {isAClassShop ? (
+            <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 shadow-sm dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
+              A类
+            </span>
           ) : null}
           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass(shopStatus)}`}>
             {shopStatus}

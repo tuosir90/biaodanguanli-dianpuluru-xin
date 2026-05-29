@@ -117,6 +117,69 @@ describe("WorkflowShopCard", () => {
     expect(html).not.toContain("累计回款:</span><span class=\"font-mono font-semibold text-text-200\">-</span>");
   });
 
+  it("日均回款大于3元或总回款大于100元时在店铺名旁显示A类标记", () => {
+    const highAverageHtml = renderToStaticMarkup(
+      createElement(WorkflowShopCard, {
+        ...baseProps,
+        shop: {
+          _id: "shop-high-average",
+          shopName: "高日均店铺",
+          merchantId: "m-high-average",
+          operatorName: "运营高日均",
+          salesName: "销售高日均",
+          wechatGroupName: "测试群高日均",
+          contractSignedDate: "2026-03-01T00:00:00+08:00",
+          deliveryPlatform: "美团餐饮",
+          shopStatus: "正常",
+          dailyPointTotalAmount: 20,
+          dailyPointTotalUpdatedDateKey: "2026-03-05",
+        },
+      })
+    );
+    const highTotalHtml = renderToStaticMarkup(
+      createElement(WorkflowShopCard, {
+        ...baseProps,
+        shop: {
+          _id: "shop-high-total",
+          shopName: "高总额店铺",
+          merchantId: "m-high-total",
+          operatorName: "运营高总额",
+          salesName: "销售高总额",
+          wechatGroupName: "测试群高总额",
+          contractSignedDate: "2026-03-01T00:00:00+08:00",
+          deliveryPlatform: "饿了么餐饮",
+          shopStatus: "正常",
+          dailyPointTotalAmount: 100.01,
+          dailyPointTotalUpdatedDateKey: "2026-03-20",
+        },
+      })
+    );
+    const regularHtml = renderToStaticMarkup(
+      createElement(WorkflowShopCard, {
+        ...baseProps,
+        shop: {
+          _id: "shop-regular",
+          shopName: "普通回款店铺",
+          merchantId: "m-regular",
+          operatorName: "运营普通",
+          salesName: "销售普通",
+          wechatGroupName: "测试群普通",
+          contractSignedDate: "2026-03-01T00:00:00+08:00",
+          deliveryPlatform: "美团餐饮",
+          shopStatus: "正常",
+          dailyPointTotalAmount: 15,
+          dailyPointTotalUpdatedDateKey: "2026-03-10",
+        },
+      })
+    );
+
+    expect(highAverageHtml).toContain("A类");
+    expect(highAverageHtml).toContain("bg-amber-100");
+    expect(highAverageHtml).toContain("text-amber-800");
+    expect(highTotalHtml).toContain("A类");
+    expect(regularHtml).not.toContain("A类");
+  });
+
   it("低回款锁定全店图时显示提示并禁用5个菜品图标签", () => {
     const html = renderToStaticMarkup(
       createElement(WorkflowShopCard, {

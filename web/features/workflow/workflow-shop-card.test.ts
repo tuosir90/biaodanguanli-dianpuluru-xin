@@ -66,13 +66,13 @@ describe("WorkflowShopCard", () => {
     expect(html).not.toContain("签约日起5天内自动标记新店");
   });
 
-  it("展示店铺最新回款金额和抽点日期", () => {
+  it("在店铺名旁边展示累计总回款金额", () => {
     const html = renderToStaticMarkup(
       createElement(WorkflowShopCard, {
         ...baseProps,
         shop: {
           _id: "shop-latest-amount",
-          shopName: "最新回款店铺",
+          shopName: "累计回款店铺",
           merchantId: "m-latest",
           operatorName: "运营金额",
           salesName: "销售金额",
@@ -80,15 +80,15 @@ describe("WorkflowShopCard", () => {
           contractSignedDate: "2026-03-02T00:00:00+08:00",
           deliveryPlatform: "美团餐饮",
           shopStatus: "正常",
-          latestDailyPointAmount: 12.345,
-          latestDailyPointDateKey: "2026-03-09",
+          dailyPointTotalAmount: 20.345,
         },
       })
     );
 
-    expect(html).toContain("最新回款:");
-    expect(html).toContain("12.35 元");
-    expect(html).toContain("2026-03-09");
+    expect(html).toContain("累计回款:");
+    expect(html).toContain("20.35 元");
+    expect(html).not.toContain("最新回款:");
+    expect(html.indexOf("累计回款:")).toBeLessThan(html.indexOf("商家ID:"));
   });
 
   it("低回款锁定全店图时显示提示并禁用5个菜品图标签", () => {

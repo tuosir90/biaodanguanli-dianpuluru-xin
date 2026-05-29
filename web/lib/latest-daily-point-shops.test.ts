@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyLatestDailyPointAmountToShops,
+  applyDailyPointTotalAmountToShops,
+  buildDailyPointTotalAmountLookup,
   buildLatestDailyPointWindowDateKeys,
   buildLatestDailyPointShopLookup,
-  getLatestDailyPointAmountInfo,
+  getDailyPointTotalAmountInfo,
   pickLatestDailyPointDateKey,
 } from "@/lib/latest-daily-point-shops";
 
@@ -53,9 +54,19 @@ describe("buildLatestDailyPointShopLookup", () => {
     expect(lookup.shopNames.has("店铺A")).toBe(true);
   });
 
-  it("按商家ID优先返回店铺最新回款金额和日期", () => {
-    const lookup = buildLatestDailyPointShopLookup([
+  it("按平台和商家ID优先返回店铺累计总回款", () => {
+    const lookup = buildDailyPointTotalAmountLookup({
+      shops: [
+        {
+          _id: "shop-2",
+          merchantId: "m-2",
+          shopName: "店铺B",
+          deliveryPlatform: "美团餐饮",
+        },
+      ],
+      dailyDetails: [
       {
+        platform: "meituan",
         merchantId: "m-2",
         storeId: "s-2",
         shopName: "店铺B",
@@ -63,39 +74,68 @@ describe("buildLatestDailyPointShopLookup", () => {
         amountValue: 8,
       },
       {
+        platform: "meituan",
         merchantId: "m-2",
         storeId: "s-2",
         shopName: "店铺B",
         recordDateKey: "2026-03-07",
         amountValue: 12.345,
       },
-    ]);
+      {
+        platform: "eleme",
+        merchantId: "m-2",
+        storeId: "s-2",
+        shopName: "店铺B",
+        recordDateKey: "2026-03-07",
+        amountValue: 99,
+      },
+      ],
+    });
 
     expect(
-      getLatestDailyPointAmountInfo(lookup, {
+      getDailyPointTotalAmountInfo(lookup, {
+        deliveryPlatform: "美团餐饮",
         merchantId: "m-2",
         shopName: "店铺B",
       })
     ).toEqual({
-      amount: 12.35,
-      dateKey: "2026-03-07",
+      totalAmount: 20.35,
     });
   });
 
-  it("商家ID未命中时按店铺名补充最新回款字段", () => {
-    const lookup = buildLatestDailyPointShopLookup([
+  it("商家ID未命中时按店铺名补充累计总回款字段", () => {
+    const lookup = buildDailyPointTotalAmountLookup({
+      shops: [
+        {
+          _id: "shop-3",
+          merchantId: "missing",
+          shopName: "店铺C",
+          deliveryPlatform: "饿了么餐饮",
+        },
+      ],
+      dailyDetails: [
       {
+        platform: "eleme",
         merchantId: "m-3",
         storeId: "s-3",
         shopName: "店铺C",
         recordDateKey: "2026-03-07",
         amountValue: 0,
       },
-    ]);
+      {
+        platform: "eleme",
+        merchantId: "m-3",
+        storeId: "s-3",
+        shopName: "店铺C",
+        recordDateKey: "2026-03-08",
+        amountValue: 3.5,
+      },
+      ],
+    });
 
     expect(
-      applyLatestDailyPointAmountToShops(
-        [{ _id: "shop-3", merchantId: "missing", shopName: "店铺C" }],
+      applyDailyPointTotalAmountToShops(
+        [{ _id: "shop-3", merchantId: "missing", shopName: "店铺C", deliveryPlatform: "饿了么餐饮" }],
         lookup
       )
     ).toEqual([
@@ -103,8 +143,8 @@ describe("buildLatestDailyPointShopLookup", () => {
         _id: "shop-3",
         merchantId: "missing",
         shopName: "店铺C",
-        latestDailyPointAmount: 0,
-        latestDailyPointDateKey: "2026-03-07",
+        deliveryPlatform: "饿了么餐饮",
+        dailyPointTotalAmount: 3.5,
       },
     ]);
   });

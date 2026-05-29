@@ -8,13 +8,6 @@ type LatestDailyPointShopRow = {
   merchantId?: string;
   storeId?: string;
   shopName?: string;
-  recordDateKey?: string;
-  amountValue?: number;
-};
-
-export type LatestDailyPointAmountInfo = {
-  amount: number;
-  dateKey: string;
 };
 
 export type LatestDailyPointShopLookup = {
@@ -22,8 +15,32 @@ export type LatestDailyPointShopLookup = {
   merchantIds: Set<string>;
   storeIds: Set<string>;
   shopNames: Set<string>;
-  amountInfoById: Map<string, LatestDailyPointAmountInfo>;
-  amountInfoByShopName: Map<string, LatestDailyPointAmountInfo>;
+};
+
+type DailyPointPlatform = "meituan" | "eleme";
+
+export type DailyPointTotalAmountShopSource = {
+  _id?: unknown;
+  merchantId?: string | null;
+  shopName?: string | null;
+  deliveryPlatform?: string | null;
+};
+
+export type DailyPointTotalAmountRow = {
+  platform?: string;
+  merchantId?: string;
+  storeId?: string;
+  shopName?: string;
+  amountValue?: number;
+};
+
+export type DailyPointTotalAmountInfo = {
+  totalAmount: number;
+};
+
+export type DailyPointTotalAmountLookup = {
+  byId: Record<DailyPointPlatform, Map<string, DailyPointTotalAmountInfo>>;
+  byShopName: Record<DailyPointPlatform, Map<string, DailyPointTotalAmountInfo>>;
 };
 
 export function pickLatestDailyPointDateKey(dateKeys: Array<string | null | undefined>) {
@@ -48,28 +65,8 @@ function toFiniteNumber(value: unknown) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function upsertLatestAmountInfo(
-  map: Map<string, LatestDailyPointAmountInfo>,
-  key: string,
-  row: LatestDailyPointShopRow
-) {
-  if (!key) return;
-  const dateKey = normalizeDateKey(row.recordDateKey);
-  if (!dateKey) return;
-
-  const amount = roundToTwo(toFiniteNumber(row.amountValue));
-  const current = map.get(key);
-  if (!current || dateKey > current.dateKey) {
-    map.set(key, { amount, dateKey });
-    return;
-  }
-
-  if (dateKey === current.dateKey) {
-    map.set(key, {
-      amount: roundToTwo(current.amount + amount),
-      dateKey,
-    });
-  }
+function normalizeDailyPointPlatform(deliveryPlatform: unknown): DailyPointPlatform {
+  return normalizeText(deliveryPlatform).includes("饿了么") ? "eleme" : "meituan";
 }
 
 export function buildLatestDailyPointShopLookup(
@@ -79,8 +76,6 @@ export function buildLatestDailyPointShopLookup(
   const merchantIds = new Set<string>();
   const storeIds = new Set<string>();
   const shopNames = new Set<string>();
-  const amountInfoById = new Map<string, LatestDailyPointAmountInfo>();
-  const amountInfoByShopName = new Map<string, LatestDailyPointAmountInfo>();
 
   rows.forEach((row) => {
     const merchantId = normalizeText(row.merchantId);
@@ -96,11 +91,6 @@ export function buildLatestDailyPointShopLookup(
     if (shopName) {
       shopNames.add(shopName);
     }
-
-    Array.from(new Set([merchantId, storeId].filter(Boolean))).forEach((id) => {
-      upsertLatestAmountInfo(amountInfoById, id, row);
-    });
-    upsertLatestAmountInfo(amountInfoByShopName, shopName, row);
   });
 
   return {
@@ -108,8 +98,6 @@ export function buildLatestDailyPointShopLookup(
     merchantIds,
     storeIds,
     shopNames,
-    amountInfoById,
-    amountInfoByShopName,
   };
 }
 
@@ -127,7 +115,7 @@ export async function fetchLatestDailyPointShopLookup() {
   const rows = await DailyPointDetail.find({
     recordDateKey: { $in: matchedDateKeys },
   })
-    .select({ _id: 0, merchantId: 1, storeId: 1, shopName: 1, recordDateKey: 1, amountValue: 1 })
+    .select({ _id: 0, merchantId: 1, storeId: 1, shopName: 1 })
     .lean<LatestDailyPointShopRow[]>();
 
   return buildLatestDailyPointShopLookup(rows, latestDateKey);
@@ -154,41 +142,172 @@ export function matchesLatestDailyPointShop(
   return false;
 }
 
-export function getLatestDailyPointAmountInfo(
-  lookup: LatestDailyPointShopLookup,
-  shop: {
-    merchantId?: string | null;
-    shopName?: string | null;
-  }
+function incrementTotalAmount(
+  map: Map<string, DailyPointTotalAmountInfo>,
+  key: string,
+  amount: number
 ) {
+  if (!key) return;
+  const current = map.get(key)?.totalAmount ?? 0;
+  map.set(key, { totalAmount: roundToTwo(current + amount) });
+}
+
+function buildEmptyTotalAmountLookup(): DailyPointTotalAmountLookup {
+  return {
+    byId: {
+      meituan: new Map<string, DailyPointTotalAmountInfo>(),
+      eleme: new Map<string, DailyPointTotalAmountInfo>(),
+    },
+    byShopName: {
+      meituan: new Map<string, DailyPointTotalAmountInfo>(),
+      eleme: new Map<string, DailyPointTotalAmountInfo>(),
+    },
+  };
+}
+
+export function buildDailyPointTotalAmountLookup(params: {
+  shops: DailyPointTotalAmountShopSource[];
+  dailyDetails: DailyPointTotalAmountRow[];
+}) {
+  const lookup = buildEmptyTotalAmountLookup();
+  const platformsById = {
+    meituan: new Set<string>(),
+    eleme: new Set<string>(),
+  };
+  const platformsByShopName = {
+    meituan: new Set<string>(),
+    eleme: new Set<string>(),
+  };
+
+  params.shops.forEach((shop) => {
+    const platform = normalizeDailyPointPlatform(shop.deliveryPlatform);
+    const merchantId = normalizeText(shop.merchantId);
+    const shopName = normalizeText(shop.shopName);
+    if (merchantId) platformsById[platform].add(merchantId);
+    if (shopName) platformsByShopName[platform].add(shopName);
+  });
+
+  params.dailyDetails.forEach((row) => {
+    const platform = normalizeText(row.platform) as DailyPointPlatform;
+    if (platform !== "meituan" && platform !== "eleme") return;
+
+    const amount = toFiniteNumber(row.amountValue);
+    const merchantId = normalizeText(row.merchantId);
+    const storeId = normalizeText(row.storeId);
+    const shopName = normalizeText(row.shopName);
+
+    Array.from(new Set([merchantId, storeId].filter(Boolean))).forEach((id) => {
+      if (platformsById[platform].has(id)) {
+        incrementTotalAmount(lookup.byId[platform], id, amount);
+      }
+    });
+
+    if (platformsByShopName[platform].has(shopName)) {
+      incrementTotalAmount(lookup.byShopName[platform], shopName, amount);
+    }
+  });
+
+  return lookup;
+}
+
+export async function fetchDailyPointTotalAmountLookup(
+  shops: DailyPointTotalAmountShopSource[]
+) {
+  if (shops.length === 0) {
+    return buildEmptyTotalAmountLookup();
+  }
+
+  const groups = {
+    meituan: {
+      merchantIds: new Set<string>(),
+      shopNames: new Set<string>(),
+    },
+    eleme: {
+      merchantIds: new Set<string>(),
+      shopNames: new Set<string>(),
+    },
+  };
+
+  shops.forEach((shop) => {
+    const platform = normalizeDailyPointPlatform(shop.deliveryPlatform);
+    const merchantId = normalizeText(shop.merchantId);
+    const shopName = normalizeText(shop.shopName);
+    if (merchantId) groups[platform].merchantIds.add(merchantId);
+    if (shopName) groups[platform].shopNames.add(shopName);
+  });
+
+  const rowFilters: Record<string, unknown>[] = [];
+  (["meituan", "eleme"] as const).forEach((platform) => {
+    const merchantIds = Array.from(groups[platform].merchantIds);
+    const shopNames = Array.from(groups[platform].shopNames);
+    const identityFilter: Record<string, unknown>[] = [];
+    if (merchantIds.length > 0) {
+      identityFilter.push({ merchantId: { $in: merchantIds } });
+      identityFilter.push({ storeId: { $in: merchantIds } });
+    }
+    if (shopNames.length > 0) {
+      identityFilter.push({ shopName: { $in: shopNames } });
+    }
+    if (identityFilter.length === 0) return;
+
+    rowFilters.push({
+      platform,
+      $or: identityFilter,
+    });
+  });
+
+  const dailyDetails =
+    rowFilters.length > 0
+      ? await DailyPointDetail.aggregate<DailyPointTotalAmountRow>([
+          { $match: { $or: rowFilters } },
+          {
+            $project: {
+              _id: 0,
+              platform: 1,
+              merchantId: 1,
+              storeId: 1,
+              shopName: 1,
+              amountValue: 1,
+            },
+          },
+        ])
+      : [];
+
+  return buildDailyPointTotalAmountLookup({ shops, dailyDetails });
+}
+
+export function getDailyPointTotalAmountInfo(
+  lookup: DailyPointTotalAmountLookup,
+  shop: DailyPointTotalAmountShopSource
+) {
+  const platform = normalizeDailyPointPlatform(shop.deliveryPlatform);
   const merchantId = normalizeText(shop.merchantId);
   const shopName = normalizeText(shop.shopName);
 
   if (merchantId) {
-    const matchedById = lookup.amountInfoById.get(merchantId);
+    const matchedById = lookup.byId[platform].get(merchantId);
     if (matchedById) return matchedById;
   }
 
   if (shopName) {
-    return lookup.amountInfoByShopName.get(shopName) ?? null;
+    return lookup.byShopName[platform].get(shopName) ?? null;
   }
 
   return null;
 }
 
-export function applyLatestDailyPointAmountToShops<
-  T extends { merchantId?: string | null; shopName?: string | null },
->(shops: T[], lookup: LatestDailyPointShopLookup) {
+export function applyDailyPointTotalAmountToShops<
+  T extends DailyPointTotalAmountShopSource,
+>(shops: T[], lookup: DailyPointTotalAmountLookup) {
   return shops.map((shop) => {
-    const amountInfo = getLatestDailyPointAmountInfo(lookup, shop);
+    const amountInfo = getDailyPointTotalAmountInfo(lookup, shop);
     if (!amountInfo) {
       return shop;
     }
 
     return {
       ...shop,
-      latestDailyPointAmount: amountInfo.amount,
-      latestDailyPointDateKey: amountInfo.dateKey,
+      dailyPointTotalAmount: amountInfo.totalAmount,
     };
   });
 }

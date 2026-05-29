@@ -133,16 +133,16 @@ function WorkflowShopCardBase({
     ? shop.terminationCooperationDays
     : fallbackOperationDays;
   const operationDaysText = typeof operationDays === "number" ? `${operationDays} 天` : "-";
-  const latestDailyPointAmount =
-    typeof shop.latestDailyPointAmount === "number" &&
-    Number.isFinite(shop.latestDailyPointAmount)
-      ? shop.latestDailyPointAmount
+  const dailyPointTotalAmount =
+    typeof shop.dailyPointTotalAmount === "number" &&
+    Number.isFinite(shop.dailyPointTotalAmount)
+      ? shop.dailyPointTotalAmount
       : null;
-  const latestDailyPointAmountText = latestDailyPointAmount !== null
-    ? `${latestDailyPointAmount.toFixed(2)} 元`
+  const dailyPointTotalAmountText = dailyPointTotalAmount !== null
+    ? `${(Math.round((dailyPointTotalAmount + Number.EPSILON) * 100) / 100).toFixed(2)} 元`
     : "-";
-  const latestDailyPointAmountClass = latestDailyPointAmount !== null
-    ? latestDailyPointAmount > 0
+  const dailyPointTotalAmountClass = dailyPointTotalAmount !== null
+    ? dailyPointTotalAmount > 0
       ? "text-green-600 dark:text-green-400"
       : "text-red-600 dark:text-red-400"
     : "text-text-200";
@@ -204,6 +204,12 @@ function WorkflowShopCardBase({
           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass(shopStatus)}`}>
             {shopStatus}
           </span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-bg-100 px-2 py-0.5 text-xs">
+            <span className="text-text-200">累计回款:</span>
+            <span className={`font-mono font-semibold ${dailyPointTotalAmountClass}`}>
+              {dailyPointTotalAmountText}
+            </span>
+          </span>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-200">
           {renderCopyableValue("商家ID", shop.merchantId || "-", `${shop._id}:merchantId`, "font-mono")}
@@ -217,16 +223,6 @@ function WorkflowShopCardBase({
           {renderCopyableValue("签约", formatLocalDate(shop.contractSignedDate), `${shop._id}:contractSignedDate`, "font-mono")}
           <span className="hidden h-3 w-px bg-border md:block"></span>
           {renderCopyableValue("平台", shop.deliveryPlatform || "-", `${shop._id}:deliveryPlatform`, `font-medium ${platformClass(shop.deliveryPlatform || "")}`)}
-          <span className="hidden h-3 w-px bg-border md:block"></span>
-          <span className="flex items-center gap-1">
-            <span className="opacity-70">最新回款:</span>
-            <span className={`font-mono font-semibold ${latestDailyPointAmountClass}`}>
-              {latestDailyPointAmountText}
-            </span>
-            {shop.latestDailyPointDateKey ? (
-              <span className="font-mono text-text-200">({shop.latestDailyPointDateKey})</span>
-            ) : null}
-          </span>
           {isNormalShop ? (
             <>
               <span className="hidden h-3 w-px bg-border md:block"></span>

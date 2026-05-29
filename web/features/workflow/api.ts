@@ -27,7 +27,7 @@ type ShopQueryParams = {
   shopNameKeyword?: string;
   merchantIdKeyword?: string;
   statusKeyword?: string;
-  includeLatestDailyPoint?: boolean;
+  includeDailyPointTotal?: boolean;
 };
 
 type ShopsResponse = {
@@ -108,8 +108,8 @@ export function buildShopQuery(params: ShopQueryParams) {
   if (params.statusKeyword?.trim()) {
     search.set("status", params.statusKeyword.trim());
   }
-  if (params.includeLatestDailyPoint) {
-    search.set("includeLatestDailyPoint", "1");
+  if (params.includeDailyPointTotal) {
+    search.set("includeDailyPointTotal", "1");
   }
 
   return search.toString();

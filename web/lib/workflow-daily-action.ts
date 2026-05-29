@@ -3,8 +3,9 @@ import {
   isWorkflowFlowTaskCompletedToday,
 } from "@/features/workflow/daily-action-monitor";
 import {
+  fetchDailyPointTotalAmountLookup,
   fetchLatestDailyPointShopLookup,
-  getLatestDailyPointAmountInfo,
+  getDailyPointTotalAmountInfo,
   matchesLatestDailyPointShop,
 } from "@/lib/latest-daily-point-shops";
 import {
@@ -49,8 +50,7 @@ export type WorkflowDailyActionShopItem = ShopLite & {
   todayActionLabel: string;
   remainingCount: number;
   daysUnpatrolled: number | null;
-  latestDailyPointAmount?: number;
-  latestDailyPointDateKey?: string;
+  dailyPointTotalAmount?: number;
 };
 
 export async function fetchWorkflowDailyActionShopItems(params?: {
@@ -98,11 +98,19 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
   }
 
   const shopIds = shops.map((shop) => shop._id);
-  const [snapshotMap, flowLockLookup, latestDailyPointLookup, todayFlowCompletedRows, latestLogs] =
+  const [
+    snapshotMap,
+    flowLockLookup,
+    latestDailyPointLookup,
+    dailyPointTotalLookup,
+    todayFlowCompletedRows,
+    latestLogs,
+  ] =
     await Promise.all([
       fetchWorkflowStatusSnapshotByShopIds(shopIds, WORKFLOW_FLOW_PROGRESS_KEYS),
       fetchWorkflowFlowLockLookup(shops),
       fetchLatestDailyPointShopLookup(),
+      fetchDailyPointTotalAmountLookup(shops),
       WorkflowProgressLog.aggregate<{ shopId?: unknown; progressKey?: string }>([
         {
           $match: {
@@ -240,11 +248,12 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
         shop.contractSignedDate,
         todayDateKey
       );
-      const latestDailyPointAmountInfo = getLatestDailyPointAmountInfo(
-        latestDailyPointLookup,
+      const dailyPointTotalAmountInfo = getDailyPointTotalAmountInfo(
+        dailyPointTotalLookup,
         {
           merchantId: shop.merchantId,
           shopName: shop.shopName,
+          deliveryPlatform: shop.deliveryPlatform,
         }
       );
       return {
@@ -259,8 +268,7 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
         flowLockReasonText: flowLockLookup[item.shopId]?.reasonText,
         flowLockAmount: flowLockLookup[item.shopId]?.totalAmount,
         flowLockDateKeys: flowLockLookup[item.shopId]?.windowDateKeys,
-        latestDailyPointAmount: latestDailyPointAmountInfo?.amount,
-        latestDailyPointDateKey: latestDailyPointAmountInfo?.dateKey,
+        dailyPointTotalAmount: dailyPointTotalAmountInfo?.totalAmount,
       };
     })
     .filter((item) => !statusKeyword || item.shopStatus === statusKeyword)

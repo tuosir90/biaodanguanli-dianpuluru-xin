@@ -16,6 +16,10 @@ export type ShopItem = {
   todayActionLabel?: string;
   remainingCount?: number;
   daysUnpatrolled?: number | null;
+  flowLockedProgressKeys?: string[];
+  flowLockReasonText?: string;
+  flowLockAmount?: number;
+  flowLockDateKeys?: string[];
 };
 
 export type PatrolStatusItem = {

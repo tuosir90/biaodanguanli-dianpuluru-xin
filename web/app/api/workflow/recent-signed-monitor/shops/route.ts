@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildRateLimitHeaders, checkRouteRateLimit } from "@/lib/request-rate-limit";
 import { connectMongo } from "@/lib/mongodb";
 import { RECENT_SIGNED_WINDOW_DAYS, RECENT_SIGNED_WINDOW_LABEL } from "@/features/workflow/constants";
+import {
+  applyWorkflowFlowLockToShops,
+  fetchWorkflowFlowLockLookup,
+} from "@/lib/workflow-flow-lock";
 import { Shop } from "@/models/shop";
 
 export const maxDuration = 30;
@@ -194,9 +198,11 @@ export async function GET(request: NextRequest) {
       ...shop,
       _id: String(shop._id),
     }));
+    const flowLockLookup = await fetchWorkflowFlowLockLookup(pagedShops);
+    const data = applyWorkflowFlowLockToShops(pagedShops, flowLockLookup);
 
     return NextResponse.json(
-      { data: pagedShops, total, page, pageSize },
+      { data, total, page, pageSize },
       { headers: RECENT_SIGNED_MONITOR_SHOPS_RESPONSE_HEADERS }
     );
   } catch (error) {

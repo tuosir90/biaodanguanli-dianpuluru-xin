@@ -4,6 +4,7 @@ import {
   getWorkflowFlowMetrics,
   getWorkflowFlowProgressKeys,
 } from "@/lib/workflow-flow-metrics";
+import { LOW_REVENUE_FULL_IMAGE_LOCK_PROGRESS_KEYS } from "@/lib/workflow-flow-lock";
 
 describe("getWorkflowFlowMetrics", () => {
   it("自动把普通美团店铺的图片墙计为已完成", () => {
@@ -128,6 +129,27 @@ describe("getWorkflowFlowMetrics", () => {
 
     expect(metrics.totalProgressCount).toBe(23);
     expect(metrics.completedCount).toBe(23);
+    expect(metrics.remainingCount).toBe(0);
+  });
+
+  it("低回款锁定后会把5个菜品图从完整流程中排除", () => {
+    const lockedKeySet = new Set<string>(
+      LOW_REVENUE_FULL_IMAGE_LOCK_PROGRESS_KEYS
+    );
+    const requiredKeys = getWorkflowFlowProgressKeys("美团餐饮").filter(
+      (key) => !lockedKeySet.has(key)
+    );
+
+    const metrics = getWorkflowFlowMetrics({
+      deliveryPlatform: "美团餐饮",
+      shopStatus: "正常",
+      completedKeys: requiredKeys,
+      loggedKeys: requiredKeys,
+      lockedProgressKeys: LOW_REVENUE_FULL_IMAGE_LOCK_PROGRESS_KEYS,
+    });
+
+    expect(metrics.totalProgressCount).toBe(18);
+    expect(metrics.completedCount).toBe(18);
     expect(metrics.remainingCount).toBe(0);
   });
 });

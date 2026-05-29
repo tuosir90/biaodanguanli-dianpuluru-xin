@@ -6,6 +6,7 @@ import {
 } from "@/lib/workflow-read-cache";
 import { buildRateLimitHeaders, checkRouteRateLimit } from "@/lib/request-rate-limit";
 import { getWorkflowFlowMetrics } from "@/lib/workflow-flow-metrics";
+import { fetchWorkflowFlowLockLookup } from "@/lib/workflow-flow-lock";
 import { WORKFLOW_FLOW_PROGRESS_KEYS } from "@/lib/workflow-progress-keys";
 import { fetchWorkflowStatusSnapshotByShopIds } from "@/lib/workflow-status-snapshot";
 import { Shop } from "@/models/shop";
@@ -28,6 +29,8 @@ type CompletionMonitorPayload = {
 
 type ShopLite = {
   _id: unknown;
+  shopName?: string;
+  merchantId?: string;
   operatorName?: string;
   deliveryPlatform?: string;
   shopStatus?: string;
@@ -74,6 +77,8 @@ export async function GET(request: NextRequest) {
     })
       .select({
         _id: 1,
+        shopName: 1,
+        merchantId: 1,
         operatorName: 1,
         deliveryPlatform: 1,
         shopStatus: 1,
@@ -91,10 +96,13 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const snapshotMap = await fetchWorkflowStatusSnapshotByShopIds(
-      shops.map((shop) => shop._id),
-      WORKFLOW_FLOW_PROGRESS_KEYS
-    );
+    const [snapshotMap, flowLockLookup] = await Promise.all([
+      fetchWorkflowStatusSnapshotByShopIds(
+        shops.map((shop) => shop._id),
+        WORKFLOW_FLOW_PROGRESS_KEYS
+      ),
+      fetchWorkflowFlowLockLookup(shops),
+    ]);
 
     const operatorCountMap = new Map<string, number>();
     let totalPendingShops = 0;
@@ -106,6 +114,7 @@ export async function GET(request: NextRequest) {
         shopStatus: shop.shopStatus,
         completedKeys: snapshot?.completedKeys,
         loggedKeys: snapshot?.loggedKeys,
+        lockedProgressKeys: flowLockLookup[String(shop._id)]?.lockedProgressKeys,
       });
 
       if (metrics.remainingCount <= 0) {

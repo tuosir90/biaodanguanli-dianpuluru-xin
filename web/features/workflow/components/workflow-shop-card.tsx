@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useRef, useState } from "react";
-import { CheckCircle2, Copy, Link2 } from "lucide-react";
+import { CheckCircle2, Copy, Link2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -96,8 +96,11 @@ function WorkflowShopCardBase({
   const visibleFlowProgressKeys = new Set<string>(
     getWorkflowFlowProgressKeys(shop.deliveryPlatform)
   );
+  const lockedProgressKeys = new Set<string>(shop.flowLockedProgressKeys ?? []);
   const incompleteFlowKeys = Array.from(visibleFlowProgressKeys).filter(
-    (progressKey) => !Boolean(statusMap[statusKey(shop._id, progressKey)])
+    (progressKey) =>
+      !lockedProgressKeys.has(progressKey) &&
+      !Boolean(statusMap[statusKey(shop._id, progressKey)])
   );
   const pendingCoCompletionGroups = getPendingWorkflowFlowCoCompletionGroups({
     deliveryPlatform: shop.deliveryPlatform,
@@ -226,6 +229,13 @@ function WorkflowShopCardBase({
         </div>
       </div>
 
+      {shop.flowLockReasonText ? (
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
+          <Lock className="h-3.5 w-3.5 shrink-0" />
+          <span>{shop.flowLockReasonText}，菜品图 5 项不计入完整流程</span>
+        </div>
+      ) : null}
+
       {pendingCoCompletionGroups.length > 0 ? (
         <div className="mb-3 space-y-2">
           {pendingCoCompletionGroups.map((group) => {
@@ -306,18 +316,24 @@ function WorkflowShopCardBase({
             );
           }
 
-          const done = Boolean(statusMap[statusKey(shop._id, item.key)]);
+          const isLocked = lockedProgressKeys.has(item.key);
+          const done = !isLocked && Boolean(statusMap[statusKey(shop._id, item.key)]);
           const isPendingCoCompletionKey =
-            !done && pendingCoCompletionToneByKey.has(item.key);
+            !isLocked &&
+            !done &&
+            pendingCoCompletionToneByKey.has(item.key);
           const pendingCoCompletionTone = pendingCoCompletionToneByKey.get(item.key);
           return (
             <Button
               key={item.key}
               type="button"
               variant="ghost"
+              disabled={isLocked}
               onClick={() => onToggleProgress(shop._id, shop.operatorName || "", item.key, item.label)}
               className={`h-auto shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-base ease-apple active-press ${
-                done
+                isLocked
+                  ? "border border-dashed border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-50 hover:text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200"
+                  : done
                   ? "bg-accent-200 text-white shadow-sm shadow-accent-200/20 hover:bg-accent-200 hover:text-white"
                   : isPendingCoCompletionKey
                   ? getWorkflowFlowCoCompletionToneClasses(
@@ -328,6 +344,8 @@ function WorkflowShopCardBase({
             >
               {done ? (
                 <CheckCircle2 className="h-3 w-3 animate-in zoom-in duration-base ease-apple" />
+              ) : isLocked ? (
+                <Lock className="h-3 w-3" />
               ) : isPendingCoCompletionKey ? (
                 <Link2 className="h-3 w-3" />
               ) : (

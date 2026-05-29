@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectMongo } from "@/lib/mongodb";
 import { buildRateLimitHeaders, checkRouteRateLimit } from "@/lib/request-rate-limit";
 import { getWorkflowFlowMetrics } from "@/lib/workflow-flow-metrics";
+import {
+  applyWorkflowFlowLockToShops,
+  fetchWorkflowFlowLockLookup,
+} from "@/lib/workflow-flow-lock";
 import { WORKFLOW_FLOW_PROGRESS_KEYS } from "@/lib/workflow-progress-keys";
 import { fetchWorkflowStatusSnapshotByShopIds } from "@/lib/workflow-status-snapshot";
 import { Shop } from "@/models/shop";
@@ -145,10 +149,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const snapshotMap = await fetchWorkflowStatusSnapshotByShopIds(
-      shops.map((shop) => shop._id),
-      WORKFLOW_FLOW_PROGRESS_KEYS
-    );
+    const [snapshotMap, flowLockLookup] = await Promise.all([
+      fetchWorkflowStatusSnapshotByShopIds(
+        shops.map((shop) => shop._id),
+        WORKFLOW_FLOW_PROGRESS_KEYS
+      ),
+      fetchWorkflowFlowLockLookup(shops),
+    ]);
 
     const pendingShops = shops
       .map((shop) => {
@@ -158,6 +165,7 @@ export async function GET(request: NextRequest) {
           shopStatus: shop.shopStatus,
           completedKeys: snapshot?.completedKeys,
           loggedKeys: snapshot?.loggedKeys,
+          lockedProgressKeys: flowLockLookup[String(shop._id)]?.lockedProgressKeys,
         });
 
         return {
@@ -193,9 +201,10 @@ export async function GET(request: NextRequest) {
       ...shop,
       _id: String(shop._id),
     }));
+    const data = applyWorkflowFlowLockToShops(pagedShops, flowLockLookup);
 
     return NextResponse.json(
-      { data: pagedShops, total, page, pageSize },
+      { data, total, page, pageSize },
       { headers: COMPLETION_MONITOR_SHOPS_RESPONSE_HEADERS }
     );
   } catch (error) {

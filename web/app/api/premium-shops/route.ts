@@ -92,6 +92,7 @@ export async function GET(request: NextRequest) {
         wechatGroupName: 1,
         deliveryPlatform: 1,
         shopStatus: 1,
+        contractSignedDate: 1,
       })
       .lean<PremiumShopSource[]>();
 

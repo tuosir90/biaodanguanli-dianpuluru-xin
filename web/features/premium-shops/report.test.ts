@@ -12,6 +12,7 @@ describe("buildPremiumShopReport", () => {
           wechatGroupName: "美团低回款群",
           deliveryPlatform: "美团餐饮",
           shopStatus: "正常",
+          contractSignedDate: "2026-05-26T00:00:00+08:00",
         },
         {
           _id: "shop-m-high",
@@ -20,6 +21,7 @@ describe("buildPremiumShopReport", () => {
           wechatGroupName: "美团高回款群",
           deliveryPlatform: "美团餐饮",
           shopStatus: "新店",
+          contractSignedDate: "2026-05-27T00:00:00+08:00",
         },
         {
           _id: "shop-e-high",
@@ -28,6 +30,7 @@ describe("buildPremiumShopReport", () => {
           wechatGroupName: "饿了么高回款群",
           deliveryPlatform: "饿了么餐饮",
           shopStatus: "正常",
+          contractSignedDate: "2026-05-28T00:00:00+08:00",
         },
       ],
       dailyDetails: [
@@ -71,13 +74,23 @@ describe("buildPremiumShopReport", () => {
       merchantId: "m-high",
       wechatGroupName: "美团高回款群",
       totalAmount: 19.35,
+      cooperationDays: 3,
+      averageDailyAmount: 6.45,
       updatedDateKey: "2026-05-29",
       platformLabel: "美团",
+    });
+    expect(report.meituan.items[1]).toMatchObject({
+      totalAmount: 8,
+      cooperationDays: 4,
+      averageDailyAmount: 2,
+      updatedDateKey: "2026-05-29",
     });
     expect(report.eleme.items[0]).toMatchObject({
       rank: 1,
       shopName: "饿了么高回款店",
       totalAmount: 20,
+      cooperationDays: 1,
+      averageDailyAmount: 20,
       updatedDateKey: "2026-05-28",
       platformLabel: "饿了么",
     });
@@ -93,6 +106,7 @@ describe("buildPremiumShopReport", () => {
           wechatGroupName: "在线无回款群",
           deliveryPlatform: "美团餐饮",
           shopStatus: "正常",
+          contractSignedDate: "2026-05-27T00:00:00+08:00",
         },
         {
           _id: "shop-terminated",
@@ -101,6 +115,7 @@ describe("buildPremiumShopReport", () => {
           wechatGroupName: "已解约群",
           deliveryPlatform: "美团餐饮",
           shopStatus: "已解约",
+          contractSignedDate: "2026-05-27T00:00:00+08:00",
         },
         {
           _id: "shop-invalid",
@@ -109,6 +124,7 @@ describe("buildPremiumShopReport", () => {
           wechatGroupName: "无效群",
           deliveryPlatform: "饿了么餐饮",
           shopStatus: "无效店铺",
+          contractSignedDate: "2026-05-27T00:00:00+08:00",
         },
       ],
       dailyDetails: [
@@ -134,6 +150,8 @@ describe("buildPremiumShopReport", () => {
         merchantId: "active",
         wechatGroupName: "在线无回款群",
         totalAmount: 0,
+        cooperationDays: 3,
+        averageDailyAmount: 0,
         updatedDateKey: "2026-05-29",
         platform: "meituan",
         platformLabel: "美团",

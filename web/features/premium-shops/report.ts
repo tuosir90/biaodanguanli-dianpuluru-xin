@@ -35,6 +35,37 @@ function roundToTwo(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
+function parseDateKey(dateKey: string) {
+  const matched = dateKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!matched) return null;
+  return new Date(Date.UTC(Number(matched[1]), Number(matched[2]) - 1, Number(matched[3])));
+}
+
+function formatShanghaiDate(date: Date) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function resolveContractSignedDateKey(value: unknown) {
+  if (!value) return "";
+  const parsed = value instanceof Date ? value : new Date(String(value));
+  return Number.isNaN(parsed.getTime()) ? "" : formatShanghaiDate(parsed);
+}
+
+function calculateCooperationDays(contractSignedDate: unknown, endDateKey: string) {
+  const startDateKey = resolveContractSignedDateKey(contractSignedDate);
+  const startDate = parseDateKey(startDateKey);
+  const endDate = parseDateKey(endDateKey);
+  if (!startDate || !endDate) return 0;
+
+  const diffDays = Math.floor((endDate.getTime() - startDate.getTime()) / 86_400_000);
+  return Math.max(diffDays, 0) + 1;
+}
+
 function buildLatestDateByPlatform(dailyDetails: PremiumShopDailyDetail[]) {
   const latestDateByPlatform = { ...EMPTY_LATEST_DATE_BY_PLATFORM };
 
@@ -84,6 +115,13 @@ export function buildPremiumShopReportFromLookup(params: {
       const platform = normalizePremiumShopPlatform(shop.deliveryPlatform);
       const amountInfo = getDailyPointTotalAmountInfo(params.amountLookup, shop);
       const totalAmount = roundToTwo(amountInfo?.totalAmount ?? 0);
+      const updatedDateKey = latestDateByPlatform[platform] || amountInfo?.updatedDateKey || "";
+      const cooperationDays = calculateCooperationDays(
+        shop.contractSignedDate,
+        updatedDateKey
+      );
+      const averageDailyAmount =
+        cooperationDays > 0 ? roundToTwo(totalAmount / cooperationDays) : 0;
 
       platformReports[platform].items.push({
         rank: 0,
@@ -92,7 +130,9 @@ export function buildPremiumShopReportFromLookup(params: {
         merchantId: normalizeText(shop.merchantId),
         wechatGroupName: normalizeText(shop.wechatGroupName),
         totalAmount,
-        updatedDateKey: amountInfo?.updatedDateKey || latestDateByPlatform[platform],
+        cooperationDays,
+        averageDailyAmount,
+        updatedDateKey,
         platform,
         platformLabel: PLATFORM_LABELS[platform],
       });

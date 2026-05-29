@@ -120,6 +120,8 @@ function PremiumShopPlatformTable({
               <TableHead className="min-w-[180px] px-4 py-3">微信群名称</TableHead>
               <TableHead className="min-w-[180px] px-4 py-3">店铺名</TableHead>
               <TableHead className="px-4 py-3 text-right">总回款金额</TableHead>
+              <TableHead className="px-4 py-3 text-right">合作总天数</TableHead>
+              <TableHead className="px-4 py-3 text-right">平均日均回款金额</TableHead>
               <TableHead className="px-4 py-3">截至日期</TableHead>
             </TableRow>
           </TableHeader>
@@ -143,13 +145,19 @@ function PremiumShopPlatformTable({
                     <div className="ml-auto h-4 w-20 animate-pulse rounded bg-bg-200" />
                   </TableCell>
                   <TableCell className="px-4 py-3">
+                    <div className="ml-auto h-4 w-16 animate-pulse rounded bg-bg-200" />
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
+                    <div className="ml-auto h-4 w-20 animate-pulse rounded bg-bg-200" />
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
                     <div className="h-4 w-20 animate-pulse rounded bg-bg-200" />
                   </TableCell>
                 </TableRow>
               ))
             ) : report.items.length === 0 ? (
               <TableRow className="border-border">
-                <TableCell colSpan={6} className="h-28 text-center text-sm text-text-200">
+                <TableCell colSpan={8} className="h-28 text-center text-sm text-text-200">
                   暂无在线未解约店铺
                 </TableCell>
               </TableRow>
@@ -178,6 +186,12 @@ function PremiumShopPlatformTable({
                   </TableCell>
                   <TableCell className="px-4 py-3 text-right font-mono font-semibold text-green-600 dark:text-green-400">
                     {formatAmount(item.totalAmount)}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-right font-mono text-xs text-text-200">
+                    {item.cooperationDays}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-right font-mono font-semibold text-text-100">
+                    {formatAmount(item.averageDailyAmount)}
                   </TableCell>
                   <TableCell className="px-4 py-3 font-mono text-xs text-text-200">
                     {item.updatedDateKey || "—"}

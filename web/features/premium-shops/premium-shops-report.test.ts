@@ -21,6 +21,8 @@ describe("PremiumShopsReport", () => {
                 merchantId: "m-1",
                 wechatGroupName: "美团高回款群",
                 totalAmount: 1234.56,
+                cooperationDays: 10,
+                averageDailyAmount: 123.46,
                 updatedDateKey: "2026-05-29",
                 platform: "meituan",
                 platformLabel: "美团",
@@ -39,6 +41,8 @@ describe("PremiumShopsReport", () => {
                 merchantId: "e-1",
                 wechatGroupName: "饿了么高回款群",
                 totalAmount: 88,
+                cooperationDays: 4,
+                averageDailyAmount: 22,
                 updatedDateKey: "2026-05-28",
                 platform: "eleme",
                 platformLabel: "饿了么",
@@ -57,6 +61,8 @@ describe("PremiumShopsReport", () => {
     expect(html).toContain("微信群名称");
     expect(html).toContain("店铺名");
     expect(html).toContain("总回款金额");
+    expect(html).toContain("合作总天数");
+    expect(html).toContain("平均日均回款金额");
     expect(html).toContain("截至日期");
     expect(html).not.toContain("所属平台");
     expect(html).toContain("m-1");
@@ -65,7 +71,9 @@ describe("PremiumShopsReport", () => {
     expect(html).toContain("点击复制微信群名称");
     expect(html).toContain("美团高回款店");
     expect(html).toContain("1,234.56 元");
+    expect(html).toContain("123.46 元");
     expect(html).toContain("饿了么高回款店");
     expect(html).toContain("88.00 元");
+    expect(html).toContain("22.00 元");
   });
 });

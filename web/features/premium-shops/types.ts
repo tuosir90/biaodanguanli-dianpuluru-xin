@@ -9,6 +9,7 @@ export type PremiumShopSource = {
   wechatGroupName?: string | null;
   deliveryPlatform?: string | null;
   shopStatus?: string | null;
+  contractSignedDate?: Date | string | null;
 };
 
 export type PremiumShopDailyDetail = DailyPointTotalAmountRow;
@@ -20,6 +21,8 @@ export type PremiumShopListItem = {
   merchantId: string;
   wechatGroupName: string;
   totalAmount: number;
+  cooperationDays: number;
+  averageDailyAmount: number;
   updatedDateKey: string;
   platform: PremiumShopPlatform;
   platformLabel: string;

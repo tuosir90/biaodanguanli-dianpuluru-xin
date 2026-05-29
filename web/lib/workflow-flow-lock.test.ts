@@ -5,7 +5,7 @@ import {
 } from "@/lib/workflow-flow-lock";
 
 describe("buildWorkflowFlowLockLookup", () => {
-  it("按签约次日起连续4天总回款低于1元时锁定全店图流程", () => {
+  it("按签约次日起连续5天总回款低于2元时锁定全店图流程", () => {
     const lookup = buildWorkflowFlowLockLookup({
       shops: [
         {
@@ -17,12 +17,20 @@ describe("buildWorkflowFlowLockLookup", () => {
         },
       ],
       availableDateKeysByPlatform: {
-        meituan: ["2026-04-10", "2026-04-05", "2026-04-04", "2026-04-03", "2026-04-02"],
+        meituan: [
+          "2026-04-10",
+          "2026-04-06",
+          "2026-04-05",
+          "2026-04-04",
+          "2026-04-03",
+          "2026-04-02",
+        ],
       },
       dailyDetails: [
         { platform: "meituan", storeId: "m1", recordDateKey: "2026-04-02", amountValue: 0.2 },
         { platform: "meituan", storeId: "m1", recordDateKey: "2026-04-03", amountValue: 0.3 },
         { platform: "meituan", storeId: "m1", recordDateKey: "2026-04-04", amountValue: 0.3 },
+        { platform: "meituan", storeId: "m1", recordDateKey: "2026-04-05", amountValue: 0.7 },
         { platform: "meituan", storeId: "m1", recordDateKey: "2026-04-10", amountValue: 99 },
       ],
     });
@@ -30,14 +38,20 @@ describe("buildWorkflowFlowLockLookup", () => {
     expect(lookup["shop-1"]).toEqual(
       expect.objectContaining({
         lockedProgressKeys: LOW_REVENUE_FULL_IMAGE_LOCK_PROGRESS_KEYS,
-        totalAmount: 0.8,
+        totalAmount: 1.5,
         latestDateKey: "2026-04-10",
-        windowDateKeys: ["2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05"],
+        windowDateKeys: [
+          "2026-04-02",
+          "2026-04-03",
+          "2026-04-04",
+          "2026-04-05",
+          "2026-04-06",
+        ],
       })
     );
   });
 
-  it("按签约次日起连续4天总回款达到1元时不锁定全店图流程", () => {
+  it("按签约次日起连续5天总回款达到2元时不锁定全店图流程", () => {
     const lookup = buildWorkflowFlowLockLookup({
       shops: [
         {
@@ -49,18 +63,18 @@ describe("buildWorkflowFlowLockLookup", () => {
         },
       ],
       availableDateKeysByPlatform: {
-        meituan: ["2026-04-05", "2026-04-04", "2026-04-03", "2026-04-02"],
+        meituan: ["2026-04-06", "2026-04-05", "2026-04-04", "2026-04-03", "2026-04-02"],
       },
       dailyDetails: [
-        { platform: "meituan", storeId: "m2", recordDateKey: "2026-04-02", amountValue: 0.5 },
-        { platform: "meituan", storeId: "m2", recordDateKey: "2026-04-03", amountValue: 0.5 },
+        { platform: "meituan", storeId: "m2", recordDateKey: "2026-04-02", amountValue: 1 },
+        { platform: "meituan", storeId: "m2", recordDateKey: "2026-04-03", amountValue: 1 },
       ],
     });
 
     expect(lookup["shop-2"]).toBeUndefined();
   });
 
-  it("平台最新日期未覆盖到签约次日起第4天时不锁定全店图流程", () => {
+  it("平台最新日期未覆盖到签约次日起第5天时不锁定全店图流程", () => {
     const lookup = buildWorkflowFlowLockLookup({
       shops: [
         {
@@ -72,7 +86,7 @@ describe("buildWorkflowFlowLockLookup", () => {
         },
       ],
       availableDateKeysByPlatform: {
-        meituan: ["2026-04-08", "2026-04-07", "2026-04-06"],
+        meituan: ["2026-04-09", "2026-04-08", "2026-04-07", "2026-04-06"],
       },
       dailyDetails: [
         { platform: "meituan", storeId: "m3", recordDateKey: "2026-04-06", amountValue: 0.5 },
@@ -82,7 +96,7 @@ describe("buildWorkflowFlowLockLookup", () => {
     expect(lookup["shop-3"]).toBeUndefined();
   });
 
-  it("商家ID未命中时回退按店铺名统计4天总回款", () => {
+  it("商家ID未命中时回退按店铺名统计5天总回款", () => {
     const lookup = buildWorkflowFlowLockLookup({
       shops: [
         {
@@ -94,7 +108,7 @@ describe("buildWorkflowFlowLockLookup", () => {
         },
       ],
       availableDateKeysByPlatform: {
-        eleme: ["2026-04-05", "2026-04-04", "2026-04-03", "2026-04-02"],
+        eleme: ["2026-04-06", "2026-04-05", "2026-04-04", "2026-04-03", "2026-04-02"],
       },
       dailyDetails: [
         { platform: "eleme", shopName: "店名回退匹配店铺", recordDateKey: "2026-04-02", amountValue: 0.2 },

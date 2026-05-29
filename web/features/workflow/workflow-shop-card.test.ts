@@ -201,12 +201,12 @@ describe("WorkflowShopCard", () => {
             "dish_31_40",
             "dish_40_plus",
           ],
-          flowLockReasonText: "签约次日起连续4天总回款 0.80 元，低于 1 元，已锁定全店图",
+          flowLockReasonText: "签约次日起连续5天总回款 1.50 元，低于 2 元，已锁定全店图",
         },
       })
     );
 
-    expect(html).toContain("签约次日起连续4天总回款 0.80 元，低于 1 元，已锁定全店图");
+    expect(html).toContain("签约次日起连续5天总回款 1.50 元，低于 2 元，已锁定全店图");
     expect(html).toContain("菜品图 5 项不计入完整流程");
     expect((html.match(/disabled=""/g) ?? []).length).toBe(5);
   });

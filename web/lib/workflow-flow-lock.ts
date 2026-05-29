@@ -2,8 +2,8 @@ import { DailyPointDetail } from "@/models/daily-point-detail";
 
 type WorkflowFlowLockPlatform = "meituan" | "eleme";
 
-export const LOW_REVENUE_LOCK_WINDOW_DAYS = 4;
-export const LOW_REVENUE_LOCK_THRESHOLD_AMOUNT = 1;
+export const LOW_REVENUE_LOCK_WINDOW_DAYS = 5;
+export const LOW_REVENUE_LOCK_THRESHOLD_AMOUNT = 2;
 export const LOW_REVENUE_FULL_IMAGE_LOCK_PROGRESS_KEYS = [
   "dish_1_10",
   "dish_11_20",

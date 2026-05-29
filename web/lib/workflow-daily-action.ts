@@ -51,6 +51,7 @@ export type WorkflowDailyActionShopItem = ShopLite & {
   remainingCount: number;
   daysUnpatrolled: number | null;
   dailyPointTotalAmount?: number;
+  dailyPointTotalUpdatedDateKey?: string;
 };
 
 export async function fetchWorkflowDailyActionShopItems(params?: {
@@ -269,6 +270,7 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
         flowLockAmount: flowLockLookup[item.shopId]?.totalAmount,
         flowLockDateKeys: flowLockLookup[item.shopId]?.windowDateKeys,
         dailyPointTotalAmount: dailyPointTotalAmountInfo?.totalAmount,
+        dailyPointTotalUpdatedDateKey: dailyPointTotalAmountInfo?.updatedDateKey,
       };
     })
     .filter((item) => !statusKeyword || item.shopStatus === statusKeyword)

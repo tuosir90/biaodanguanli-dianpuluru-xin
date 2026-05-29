@@ -66,7 +66,7 @@ describe("WorkflowShopCard", () => {
     expect(html).not.toContain("签约日起5天内自动标记新店");
   });
 
-  it("在店铺名旁边展示累计总回款金额", () => {
+  it("在平台后面展示累计总回款金额", () => {
     const html = renderToStaticMarkup(
       createElement(WorkflowShopCard, {
         ...baseProps,
@@ -81,14 +81,40 @@ describe("WorkflowShopCard", () => {
           deliveryPlatform: "美团餐饮",
           shopStatus: "正常",
           dailyPointTotalAmount: 20.345,
+          dailyPointTotalUpdatedDateKey: "2026-03-09",
         },
       })
     );
 
     expect(html).toContain("累计回款:");
     expect(html).toContain("20.35 元");
+    expect(html).toContain("更新至 2026-03-09");
     expect(html).not.toContain("最新回款:");
-    expect(html.indexOf("累计回款:")).toBeLessThan(html.indexOf("商家ID:"));
+    expect(html.indexOf("平台:")).toBeLessThan(html.indexOf("累计回款:"));
+    expect(html.indexOf("累计回款:")).toBeLessThan(html.indexOf("巡店进度:"));
+  });
+
+  it("查不到累计总回款时展示0元", () => {
+    const html = renderToStaticMarkup(
+      createElement(WorkflowShopCard, {
+        ...baseProps,
+        shop: {
+          _id: "shop-empty-amount",
+          shopName: "无回款店铺",
+          merchantId: "m-empty",
+          operatorName: "运营无回款",
+          salesName: "销售无回款",
+          wechatGroupName: "测试群无回款",
+          contractSignedDate: "2026-03-02T00:00:00+08:00",
+          deliveryPlatform: "饿了么餐饮",
+          shopStatus: "正常",
+        },
+      })
+    );
+
+    expect(html).toContain("累计回款:");
+    expect(html).toContain("0 元");
+    expect(html).not.toContain("累计回款:</span><span class=\"font-mono font-semibold text-text-200\">-</span>");
   });
 
   it("低回款锁定全店图时显示提示并禁用5个菜品图标签", () => {

@@ -21,6 +21,7 @@ export type ShopItem = {
   flowLockAmount?: number;
   flowLockDateKeys?: string[];
   dailyPointTotalAmount?: number;
+  dailyPointTotalUpdatedDateKey?: string;
 };
 
 export type PatrolStatusItem = {

@@ -133,18 +133,17 @@ function WorkflowShopCardBase({
     ? shop.terminationCooperationDays
     : fallbackOperationDays;
   const operationDaysText = typeof operationDays === "number" ? `${operationDays} 天` : "-";
-  const dailyPointTotalAmount =
+  const hasDailyPointTotalAmount =
     typeof shop.dailyPointTotalAmount === "number" &&
-    Number.isFinite(shop.dailyPointTotalAmount)
-      ? shop.dailyPointTotalAmount
-      : null;
-  const dailyPointTotalAmountText = dailyPointTotalAmount !== null
+    Number.isFinite(shop.dailyPointTotalAmount);
+  const dailyPointTotalAmount = hasDailyPointTotalAmount ? shop.dailyPointTotalAmount! : 0;
+  const dailyPointTotalAmountText = hasDailyPointTotalAmount
     ? `${(Math.round((dailyPointTotalAmount + Number.EPSILON) * 100) / 100).toFixed(2)} 元`
-    : "-";
-  const dailyPointTotalAmountClass = dailyPointTotalAmount !== null
-    ? dailyPointTotalAmount > 0
-      ? "text-green-600 dark:text-green-400"
-      : "text-red-600 dark:text-red-400"
+    : "0 元";
+  const dailyPointTotalAmountClass = dailyPointTotalAmount > 0
+    ? "text-green-600 dark:text-green-400"
+    : dailyPointTotalAmount < 0
+      ? "text-red-600 dark:text-red-400"
     : "text-text-200";
 
   const renderCopyableValue = (label: string, valueText: string, valueKey: string, valueClassName?: string) => (
@@ -204,12 +203,6 @@ function WorkflowShopCardBase({
           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass(shopStatus)}`}>
             {shopStatus}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-bg-100 px-2 py-0.5 text-xs">
-            <span className="text-text-200">累计回款:</span>
-            <span className={`font-mono font-semibold ${dailyPointTotalAmountClass}`}>
-              {dailyPointTotalAmountText}
-            </span>
-          </span>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-200">
           {renderCopyableValue("商家ID", shop.merchantId || "-", `${shop._id}:merchantId`, "font-mono")}
@@ -223,6 +216,18 @@ function WorkflowShopCardBase({
           {renderCopyableValue("签约", formatLocalDate(shop.contractSignedDate), `${shop._id}:contractSignedDate`, "font-mono")}
           <span className="hidden h-3 w-px bg-border md:block"></span>
           {renderCopyableValue("平台", shop.deliveryPlatform || "-", `${shop._id}:deliveryPlatform`, `font-medium ${platformClass(shop.deliveryPlatform || "")}`)}
+          <span className="hidden h-3 w-px bg-border md:block"></span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-bg-100 px-2 py-0.5 text-xs">
+            <span className="text-text-200">累计回款:</span>
+            <span className={`font-mono font-semibold ${dailyPointTotalAmountClass}`}>
+              {dailyPointTotalAmountText}
+            </span>
+            {shop.dailyPointTotalUpdatedDateKey ? (
+              <span className="font-mono text-text-200">
+                更新至 {shop.dailyPointTotalUpdatedDateKey}
+              </span>
+            ) : null}
+          </span>
           {isNormalShop ? (
             <>
               <span className="hidden h-3 w-px bg-border md:block"></span>

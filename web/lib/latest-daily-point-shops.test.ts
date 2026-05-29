@@ -100,6 +100,7 @@ describe("buildLatestDailyPointShopLookup", () => {
       })
     ).toEqual({
       totalAmount: 20.35,
+      updatedDateKey: "2026-03-07",
     });
   });
 
@@ -145,6 +146,7 @@ describe("buildLatestDailyPointShopLookup", () => {
         shopName: "店铺C",
         deliveryPlatform: "饿了么餐饮",
         dailyPointTotalAmount: 3.5,
+        dailyPointTotalUpdatedDateKey: "2026-03-08",
       },
     ]);
   });

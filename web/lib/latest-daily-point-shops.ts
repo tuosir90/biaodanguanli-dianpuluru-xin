@@ -31,11 +31,13 @@ export type DailyPointTotalAmountRow = {
   merchantId?: string;
   storeId?: string;
   shopName?: string;
+  recordDateKey?: string;
   amountValue?: number;
 };
 
 export type DailyPointTotalAmountInfo = {
   totalAmount: number;
+  updatedDateKey: string;
 };
 
 export type DailyPointTotalAmountLookup = {
@@ -145,11 +147,20 @@ export function matchesLatestDailyPointShop(
 function incrementTotalAmount(
   map: Map<string, DailyPointTotalAmountInfo>,
   key: string,
-  amount: number
+  amount: number,
+  dateKey?: string
 ) {
   if (!key) return;
-  const current = map.get(key)?.totalAmount ?? 0;
-  map.set(key, { totalAmount: roundToTwo(current + amount) });
+  const current = map.get(key);
+  const normalizedDateKey = normalizeDateKey(dateKey);
+  const updatedDateKey =
+    normalizedDateKey && normalizedDateKey > (current?.updatedDateKey ?? "")
+      ? normalizedDateKey
+      : current?.updatedDateKey ?? "";
+  map.set(key, {
+    totalAmount: roundToTwo((current?.totalAmount ?? 0) + amount),
+    updatedDateKey,
+  });
 }
 
 function buildEmptyTotalAmountLookup(): DailyPointTotalAmountLookup {
@@ -195,15 +206,16 @@ export function buildDailyPointTotalAmountLookup(params: {
     const merchantId = normalizeText(row.merchantId);
     const storeId = normalizeText(row.storeId);
     const shopName = normalizeText(row.shopName);
+    const recordDateKey = normalizeDateKey(row.recordDateKey);
 
     Array.from(new Set([merchantId, storeId].filter(Boolean))).forEach((id) => {
       if (platformsById[platform].has(id)) {
-        incrementTotalAmount(lookup.byId[platform], id, amount);
+        incrementTotalAmount(lookup.byId[platform], id, amount, recordDateKey);
       }
     });
 
     if (platformsByShopName[platform].has(shopName)) {
-      incrementTotalAmount(lookup.byShopName[platform], shopName, amount);
+      incrementTotalAmount(lookup.byShopName[platform], shopName, amount, recordDateKey);
     }
   });
 
@@ -267,6 +279,7 @@ export async function fetchDailyPointTotalAmountLookup(
               merchantId: 1,
               storeId: 1,
               shopName: 1,
+              recordDateKey: 1,
               amountValue: 1,
             },
           },
@@ -308,6 +321,7 @@ export function applyDailyPointTotalAmountToShops<
     return {
       ...shop,
       dailyPointTotalAmount: amountInfo.totalAmount,
+      dailyPointTotalUpdatedDateKey: amountInfo.updatedDateKey,
     };
   });
 }

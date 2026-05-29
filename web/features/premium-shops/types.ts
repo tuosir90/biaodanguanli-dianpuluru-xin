@@ -6,6 +6,7 @@ export type PremiumShopSource = {
   _id?: unknown;
   shopName?: string | null;
   merchantId?: string | null;
+  wechatGroupName?: string | null;
   deliveryPlatform?: string | null;
   shopStatus?: string | null;
 };
@@ -17,6 +18,7 @@ export type PremiumShopListItem = {
   shopId: string;
   shopName: string;
   merchantId: string;
+  wechatGroupName: string;
   totalAmount: number;
   updatedDateKey: string;
   platform: PremiumShopPlatform;

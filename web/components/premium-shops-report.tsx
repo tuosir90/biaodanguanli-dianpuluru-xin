@@ -1,6 +1,7 @@
 "use client";
 
-import { BadgeDollarSign, Crown } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { BadgeDollarSign, CheckCircle2, Copy, Crown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -47,6 +48,55 @@ function PremiumShopPlatformTable({
   report: PremiumShopPlatformReport;
   loading: boolean;
 }) {
+  const [copiedValueKey, setCopiedValueKey] = useState<string | null>(null);
+  const copiedValueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const copyValueText = useCallback(async (valueKey: string, valueText: string) => {
+    if (!valueText || valueText === "-") return;
+    try {
+      await navigator.clipboard.writeText(valueText);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = valueText;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+
+    setCopiedValueKey(valueKey);
+    if (copiedValueTimerRef.current) {
+      clearTimeout(copiedValueTimerRef.current);
+    }
+    copiedValueTimerRef.current = setTimeout(() => setCopiedValueKey(null), 1200);
+  }, []);
+
+  const renderCopyableValue = (label: string, valueText: string, valueKey: string) => {
+    const normalizedValue = valueText || "-";
+    const isCopied = copiedValueKey === valueKey;
+
+    return (
+      <button
+        type="button"
+        onClick={() => copyValueText(valueKey, normalizedValue)}
+        disabled={normalizedValue === "-"}
+        className={`inline-flex max-w-full items-center gap-1 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-bg-200 disabled:cursor-not-allowed disabled:opacity-60 ${
+          isCopied ? "text-green-600 dark:text-green-400" : "text-text-100"
+        }`}
+        title={normalizedValue === "-" ? `${label}为空` : `点击复制${label}`}
+      >
+        <span className="truncate">{normalizedValue}</span>
+        {isCopied ? (
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+        ) : (
+          <Copy className="h-3.5 w-3.5 shrink-0 opacity-50" />
+        )}
+      </button>
+    );
+  };
+
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
       <div className="flex items-center justify-between gap-4 border-b border-border bg-bg-100/50 px-5 py-4">
@@ -66,10 +116,11 @@ function PremiumShopPlatformTable({
           <TableHeader className="sticky top-0 z-10 bg-bg-200/95 backdrop-blur">
             <TableRow className="border-border hover:bg-transparent">
               <TableHead className="w-14 px-4 py-3">序号</TableHead>
+              <TableHead className="min-w-[120px] px-4 py-3">商家ID</TableHead>
+              <TableHead className="min-w-[180px] px-4 py-3">微信群名称</TableHead>
               <TableHead className="min-w-[180px] px-4 py-3">店铺名</TableHead>
               <TableHead className="px-4 py-3 text-right">总回款金额</TableHead>
               <TableHead className="px-4 py-3">截至日期</TableHead>
-              <TableHead className="px-4 py-3">所属平台</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -83,19 +134,22 @@ function PremiumShopPlatformTable({
                     <div className="h-4 w-32 animate-pulse rounded bg-bg-200" />
                   </TableCell>
                   <TableCell className="px-4 py-3">
+                    <div className="h-4 w-36 animate-pulse rounded bg-bg-200" />
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
+                    <div className="h-4 w-32 animate-pulse rounded bg-bg-200" />
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
                     <div className="ml-auto h-4 w-20 animate-pulse rounded bg-bg-200" />
                   </TableCell>
                   <TableCell className="px-4 py-3">
                     <div className="h-4 w-20 animate-pulse rounded bg-bg-200" />
                   </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="h-4 w-12 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
                 </TableRow>
               ))
             ) : report.items.length === 0 ? (
               <TableRow className="border-border">
-                <TableCell colSpan={5} className="h-28 text-center text-sm text-text-200">
+                <TableCell colSpan={6} className="h-28 text-center text-sm text-text-200">
                   暂无在线未解约店铺
                 </TableCell>
               </TableRow>
@@ -105,6 +159,20 @@ function PremiumShopPlatformTable({
                   <TableCell className="px-4 py-3 font-mono text-xs text-text-200">
                     {item.rank}
                   </TableCell>
+                  <TableCell className="max-w-[150px] px-4 py-3 font-mono text-xs">
+                    {renderCopyableValue(
+                      "商家ID",
+                      item.merchantId,
+                      `${item.shopId}:merchantId`
+                    )}
+                  </TableCell>
+                  <TableCell className="max-w-[220px] px-4 py-3 text-xs">
+                    {renderCopyableValue(
+                      "微信群名称",
+                      item.wechatGroupName,
+                      `${item.shopId}:wechatGroupName`
+                    )}
+                  </TableCell>
                   <TableCell className="max-w-[260px] truncate px-4 py-3 font-medium text-text-100">
                     {item.shopName}
                   </TableCell>
@@ -113,9 +181,6 @@ function PremiumShopPlatformTable({
                   </TableCell>
                   <TableCell className="px-4 py-3 font-mono text-xs text-text-200">
                     {item.updatedDateKey || "—"}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-text-200">
-                    {item.platformLabel}
                   </TableCell>
                 </TableRow>
               ))

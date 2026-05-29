@@ -90,6 +90,7 @@ export function buildPremiumShopReportFromLookup(params: {
         shopId: normalizeText(shop._id),
         shopName: normalizeText(shop.shopName) || "-",
         merchantId: normalizeText(shop.merchantId),
+        wechatGroupName: normalizeText(shop.wechatGroupName),
         totalAmount,
         updatedDateKey: amountInfo?.updatedDateKey || latestDateByPlatform[platform],
         platform,

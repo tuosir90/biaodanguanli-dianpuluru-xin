@@ -89,6 +89,7 @@ export async function GET(request: NextRequest) {
         _id: 1,
         shopName: 1,
         merchantId: 1,
+        wechatGroupName: 1,
         deliveryPlatform: 1,
         shopStatus: 1,
       })

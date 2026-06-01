@@ -39,7 +39,7 @@ describe("getWorkflowFlowMetrics", () => {
       loggedKeys: [],
     });
 
-    expect(metrics.totalProgressCount).toBe(23);
+    expect(metrics.totalProgressCount).toBe(24);
   });
 
   it("饿了么店铺包含视频店招并排除其他隐藏流程项", () => {
@@ -55,8 +55,20 @@ describe("getWorkflowFlowMetrics", () => {
     expect(flowKeys).not.toContain("image_wall");
     expect(flowKeys).not.toContain("mt_detail");
     expect(flowKeys).not.toContain("brand_story");
-    expect(metrics.totalProgressCount).toBe(21);
-    expect(metrics.remainingCount).toBe(21);
+    expect(metrics.totalProgressCount).toBe(22);
+    expect(metrics.remainingCount).toBe(22);
+  });
+
+  it("所有平台都在菜品描述撰写后追加菜品描述全部上线流程", () => {
+    const meituanKeys = getWorkflowFlowProgressKeys("美团餐饮");
+    const elemeKeys = getWorkflowFlowProgressKeys("饿了么餐饮");
+
+    expect(meituanKeys[meituanKeys.indexOf("dish_desc") + 1]).toBe(
+      "dish_desc_online"
+    );
+    expect(elemeKeys[elemeKeys.indexOf("dish_desc") + 1]).toBe(
+      "dish_desc_online"
+    );
   });
 
   it("饿了么已完成店铺会默认补标视频店招、橱窗展示和店铺分解析", () => {
@@ -127,8 +139,8 @@ describe("getWorkflowFlowMetrics", () => {
       loggedKeys: requiredKeys,
     });
 
-    expect(metrics.totalProgressCount).toBe(23);
-    expect(metrics.completedCount).toBe(23);
+    expect(metrics.totalProgressCount).toBe(24);
+    expect(metrics.completedCount).toBe(24);
     expect(metrics.remainingCount).toBe(0);
   });
 
@@ -148,8 +160,8 @@ describe("getWorkflowFlowMetrics", () => {
       lockedProgressKeys: LOW_REVENUE_FULL_IMAGE_LOCK_PROGRESS_KEYS,
     });
 
-    expect(metrics.totalProgressCount).toBe(18);
-    expect(metrics.completedCount).toBe(18);
+    expect(metrics.totalProgressCount).toBe(19);
+    expect(metrics.completedCount).toBe(19);
     expect(metrics.remainingCount).toBe(0);
   });
 });

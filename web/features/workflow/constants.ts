@@ -26,6 +26,7 @@ export const progressItems: ProgressItem[] = [
   { key: "mt_detail", label: "美团外卖详情页图" },
   { key: "title_keyword", label: "标题关键词优化" },
   { key: "dish_desc", label: "菜品描述撰写" },
+  { key: "dish_desc_online", label: "菜品描述全部上线" },
   { key: "review_appeal", label: "评价解释差评申诉" },
   { key: "brand_story", label: "美团品牌故事" },
   { key: "coupon_marketing", label: "精准营销发券" },

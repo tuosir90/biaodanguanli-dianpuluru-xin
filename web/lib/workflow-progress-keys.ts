@@ -15,6 +15,7 @@ export const WORKFLOW_FLOW_PROGRESS_KEYS = [
   "mt_detail",
   "title_keyword",
   "dish_desc",
+  "dish_desc_online",
   "review_appeal",
   "brand_story",
   "coupon_marketing",

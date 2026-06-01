@@ -135,6 +135,12 @@ export function getWorkflowEffectiveCompletedKeys({
     completedSet.add("image_wall");
   }
 
+  applyDishDescOnlineDefaultCompletedKey({
+    completedSet,
+    loggedSet,
+    flowKeys,
+  });
+
   if (isElemeShop) {
     applyDefaultCompletedProgressKeys({
       completedSet,
@@ -150,12 +156,6 @@ export function getWorkflowEffectiveCompletedKeys({
     loggedSet,
     flowKeys,
     defaultProgressKeys: LEGACY_DEFAULT_COMPLETED_PROGRESS_KEYS,
-  });
-
-  applyDishDescOnlineDefaultCompletedKey({
-    completedSet,
-    loggedSet,
-    flowKeys,
   });
 
   return completedSet;

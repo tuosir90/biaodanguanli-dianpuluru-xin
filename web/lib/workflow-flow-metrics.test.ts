@@ -136,6 +136,46 @@ describe("getWorkflowFlowMetrics", () => {
     expect(completedSet.has("dish_desc_online")).toBe(false);
   });
 
+  it("美团历史完成店铺缺少新标签时仍会默认补标开启新店特权", () => {
+    const meituanKeys = getWorkflowFlowProgressKeys("美团餐饮");
+    const completedKeys = meituanKeys.filter(
+      (key) => !["new_store_privilege", "dish_desc_online"].includes(key)
+    );
+
+    const completedSet = getWorkflowEffectiveCompletedKeys({
+      deliveryPlatform: "美团餐饮",
+      shopStatus: "正常",
+      completedKeys,
+      loggedKeys: completedKeys,
+    });
+
+    expect(completedSet.has("dish_desc_online")).toBe(true);
+    expect(completedSet.has("new_store_privilege")).toBe(true);
+  });
+
+  it("饿了么历史完成店铺缺少新标签时仍会默认补标新店特权、视频店招、橱窗展示和店铺分解析", () => {
+    const elemeKeys = getWorkflowFlowProgressKeys("饿了么餐饮");
+    const defaultKeys = [
+      "new_store_privilege",
+      "video_sign",
+      "window_display",
+      "store_score",
+      "dish_desc_online",
+    ];
+    const completedKeys = elemeKeys.filter((key) => !defaultKeys.includes(key));
+
+    const completedSet = getWorkflowEffectiveCompletedKeys({
+      deliveryPlatform: "饿了么餐饮",
+      shopStatus: "正常",
+      completedKeys,
+      loggedKeys: completedKeys,
+    });
+
+    defaultKeys.forEach((key) => {
+      expect(completedSet.has(key)).toBe(true);
+    });
+  });
+
   it("饿了么已完成店铺会默认补标视频店招、橱窗展示和店铺分解析", () => {
     const elemeKeys = getWorkflowFlowProgressKeys("饿了么餐饮");
     const baselineKeys = elemeKeys.filter(

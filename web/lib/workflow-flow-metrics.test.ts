@@ -71,6 +71,71 @@ describe("getWorkflowFlowMetrics", () => {
     );
   });
 
+  it("历史已完成店铺会默认补标菜品描述全部上线", () => {
+    const flowKeys = getWorkflowFlowProgressKeys("美团餐饮");
+    const completedBeforeNewStep = flowKeys.filter(
+      (key) => key !== "dish_desc_online"
+    );
+
+    const completedSet = getWorkflowEffectiveCompletedKeys({
+      deliveryPlatform: "美团餐饮",
+      shopStatus: "正常",
+      completedKeys: completedBeforeNewStep,
+      loggedKeys: completedBeforeNewStep,
+    });
+
+    expect(completedSet.has("dish_desc_online")).toBe(true);
+  });
+
+  it("流程剩余5个以内的店铺会默认补标菜品描述全部上线", () => {
+    const flowKeys = getWorkflowFlowProgressKeys("美团餐饮");
+    const completedKeys = flowKeys.filter(
+      (key) =>
+        ![
+          "dish_desc_online",
+          "review_appeal",
+          "coupon_marketing",
+          "weekly_report",
+          "paid_tuning",
+        ].includes(key)
+    );
+
+    const completedSet = getWorkflowEffectiveCompletedKeys({
+      deliveryPlatform: "美团餐饮",
+      shopStatus: "正常",
+      completedKeys,
+      loggedKeys: completedKeys,
+    });
+
+    expect(completedSet.has("dish_desc_online")).toBe(true);
+  });
+
+  it("流程剩余超过5个的未完成店铺不会默认补标菜品描述全部上线", () => {
+    const flowKeys = getWorkflowFlowProgressKeys("美团餐饮");
+    const completedKeys = flowKeys.filter(
+      (key) =>
+        ![
+          "dish_desc_online",
+          "review_appeal",
+          "brand_story",
+          "coupon_marketing",
+          "weekly_report",
+          "store_score",
+          "new_product",
+          "paid_tuning",
+        ].includes(key)
+    );
+
+    const completedSet = getWorkflowEffectiveCompletedKeys({
+      deliveryPlatform: "美团餐饮",
+      shopStatus: "正常",
+      completedKeys,
+      loggedKeys: completedKeys,
+    });
+
+    expect(completedSet.has("dish_desc_online")).toBe(false);
+  });
+
   it("饿了么已完成店铺会默认补标视频店招、橱窗展示和店铺分解析", () => {
     const elemeKeys = getWorkflowFlowProgressKeys("饿了么餐饮");
     const baselineKeys = elemeKeys.filter(

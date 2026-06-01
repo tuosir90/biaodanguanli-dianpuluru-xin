@@ -9,6 +9,8 @@ const ELEME_HIDDEN_PROGRESS_KEYS = new Set([
 
 const ELEME_DEFAULT_COMPLETED_PROGRESS_KEYS = ["video_sign", "window_display", "store_score"] as const;
 const LEGACY_DEFAULT_COMPLETED_PROGRESS_KEYS = ["new_store_privilege"] as const;
+const DISH_DESC_ONLINE_PROGRESS_KEY = "dish_desc_online";
+const DISH_DESC_ONLINE_AUTO_COMPLETE_MAX_REMAINING = 5;
 
 type WorkflowFlowMetricsParams = {
   deliveryPlatform?: string | null;
@@ -87,6 +89,32 @@ function applyDefaultCompletedProgressKeys(params: {
   });
 }
 
+function applyDishDescOnlineDefaultCompletedKey(params: {
+  completedSet: Set<string>;
+  loggedSet: Set<string>;
+  flowKeys: string[];
+}) {
+  if (
+    params.loggedSet.has(DISH_DESC_ONLINE_PROGRESS_KEY) ||
+    !params.flowKeys.includes(DISH_DESC_ONLINE_PROGRESS_KEY)
+  ) {
+    return;
+  }
+
+  const remainingWithoutDishDescOnline = params.flowKeys.filter(
+    (progressKey) =>
+      progressKey !== DISH_DESC_ONLINE_PROGRESS_KEY &&
+      !params.completedSet.has(progressKey)
+  ).length;
+
+  if (
+    remainingWithoutDishDescOnline <=
+    DISH_DESC_ONLINE_AUTO_COMPLETE_MAX_REMAINING
+  ) {
+    params.completedSet.add(DISH_DESC_ONLINE_PROGRESS_KEY);
+  }
+}
+
 export function getWorkflowEffectiveCompletedKeys({
   deliveryPlatform,
   shopStatus,
@@ -122,6 +150,12 @@ export function getWorkflowEffectiveCompletedKeys({
     loggedSet,
     flowKeys,
     defaultProgressKeys: LEGACY_DEFAULT_COMPLETED_PROGRESS_KEYS,
+  });
+
+  applyDishDescOnlineDefaultCompletedKey({
+    completedSet,
+    loggedSet,
+    flowKeys,
   });
 
   return completedSet;

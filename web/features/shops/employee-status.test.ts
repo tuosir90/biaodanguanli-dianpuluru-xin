@@ -9,6 +9,8 @@ import {
 describe("employee status", () => {
   it("识别离职销售和在职运营", () => {
     expect(resolveSalesEmploymentStatus("李帅")).toBe("离职");
+    expect(resolveSalesEmploymentStatus("华颖")).toBe("离职");
+    expect(resolveSalesEmploymentStatus("吴销")).toBe("离职");
     expect(resolveSalesEmploymentStatus("张三")).toBe("在职");
     expect(resolveOperatorEmploymentStatus("运营A")).toBe("在职");
   });

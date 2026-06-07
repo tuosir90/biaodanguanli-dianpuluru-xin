@@ -13,9 +13,9 @@ describe("店铺数据展示筛选区", () => {
     expect(source).not.toContain('label="销售状态"');
   });
 
-  it("所有筛选框在同一行展示", () => {
-    expect(source).toContain('className="mt-6 overflow-x-auto pb-2"');
-    expect(source).toContain('className="grid min-w-[1120px] grid-cols-7 gap-4 xl:min-w-0"');
+  it("所有筛选框在同一行展示（7 列网格）", () => {
+    // 重构为 Ant Design 后，外层筛选区仍使用 7 列网格在同一行展示
+    expect(source).toContain("grid-cols-7");
     expect(source).not.toContain("xl:grid-cols-5");
   });
 

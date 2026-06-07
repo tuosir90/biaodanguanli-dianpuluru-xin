@@ -162,7 +162,7 @@ body {
 }
 
 [data-theme="dark"] .glass {
-  background: rgba(15, 23, 42, 0.75); /* Matches slate-900 */
+  background: rgba(10, 10, 10, 0.75); /* neutral near-black */
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -276,3 +276,93 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* ===== Ant Design 桥接组件样式（shadcn 风格统一） ===== */
+/* 让 ui/* 桥接组件填满容器宽度，沿用原有布局预期 */
+.v0-ui-input,
+.v0-ui-select {
+  width: 100%;
+}
+
+.v0-ui-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--foreground);
+  user-select: none;
+}
+
+/* Button：保持 inline-flex 居中、占满容器（block 由调用方控制） */
+.v0-ui-button.w-full,
+.v0-ui-button.w-full > span {
+  width: 100%;
+}
+
+/* 让带 lucide 图标的按钮内容垂直居中 */
+.v0-ui-button :where(svg) {
+  vertical-align: middle;
+}
+
+/* ===== ECharts 与 AntD 主题协同的图表配色变量 ===== */
+:root {
+  --chart-axis: var(--text-200);
+  --chart-grid: var(--border);
+}
+
+/* ===== ui/table 桥接：对齐 Ant Design Table 观感 ===== */
+.v0-antd-table-wrap {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.v0-antd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.v0-antd-table thead th {
+  background: var(--bg-200);
+  color: var(--text-200);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.v0-antd-table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.v0-antd-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.v0-antd-table tbody tr {
+  transition: background-color var(--duration-fast) var(--ease-apple);
+}
+
+.v0-antd-table tbody tr:hover {
+  background: color-mix(in srgb, var(--bg-200), transparent 40%);
+}
+
+.v0-antd-table-footer {
+  background: var(--bg-200);
+  font-weight: 500;
+  border-top: 1px solid var(--border);
+}
+
+.v0-antd-table-caption {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-200);
+}
+

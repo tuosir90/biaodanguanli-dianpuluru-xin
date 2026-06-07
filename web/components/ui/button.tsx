@@ -1,64 +1,143 @@
+"use client"
+
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { Slot } from "radix-ui"
+import { Button as AntButton } from "antd"
+import type { ButtonProps as AntButtonProps } from "antd"
 
 import { cn } from "@/lib/utils"
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        xs: "h-6 gap-1 rounded-md px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        icon: "size-9",
-        "icon-xs": "size-6 rounded-md [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-8",
-        "icon-lg": "size-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
+// 兼容原 shadcn Button API 的变体与尺寸定义
+type Variant =
+  | "default"
+  | "destructive"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link"
+type Size =
+  | "default"
+  | "xs"
+  | "sm"
+  | "lg"
+  | "icon"
+  | "icon-xs"
+  | "icon-sm"
+  | "icon-lg"
 
+// 将 shadcn 变体映射到 antd 的 type / variant / color
+function mapVariant(variant: Variant): Partial<AntButtonProps> {
+  switch (variant) {
+    case "default":
+      return { type: "primary" }
+    case "destructive":
+      return { danger: true, type: "primary" }
+    case "outline":
+      return { type: "default" }
+    case "secondary":
+      return { type: "default" }
+    case "ghost":
+      return { type: "text" }
+    case "link":
+      return { type: "link" }
+    default:
+      return { type: "default" }
+  }
+}
+
+function mapSize(size: Size): {
+  antSize: AntButtonProps["size"]
+  iconOnly: boolean
+} {
+  switch (size) {
+    case "xs":
+    case "sm":
+    case "icon-xs":
+    case "icon-sm":
+      return { antSize: "small", iconOnly: size.startsWith("icon") }
+    case "lg":
+    case "icon-lg":
+      return { antSize: "large", iconOnly: size.startsWith("icon") }
+    case "icon":
+      return { antSize: "middle", iconOnly: true }
+    default:
+      return { antSize: "middle", iconOnly: false }
+  }
+}
+
+export type ButtonProps = Omit<
+  React.ComponentProps<"button">,
+  "type" | "color"
+> & {
+  variant?: Variant
+  size?: Size
+  asChild?: boolean
+  htmlType?: AntButtonProps["htmlType"]
+  type?: React.ComponentProps<"button">["type"]
+  loading?: boolean
+  icon?: React.ReactNode
+  block?: boolean
+}
+
+// 用于将 className 风格信息保留作 data 属性（便于测试与样式覆盖）
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  type,
+  htmlType,
+  children,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot.Root : "button"
+}: ButtonProps) {
+  const variantProps = mapVariant(variant)
+  const { antSize, iconOnly } = mapSize(size)
+
+  // asChild：用于包裹 <Link> 等元素，渲染为带样式的内联元素
+  if (asChild) {
+    return (
+      <AntButton
+        {...variantProps}
+        size={antSize}
+        shape={iconOnly ? "default" : undefined}
+        data-variant={variant}
+        data-size={size}
+        className={cn("v0-ui-button", className)}
+        // antd Button 支持以子元素作为内容
+        {...(props as object)}
+      >
+        {children}
+      </AntButton>
+    )
+  }
+
+  // 原生 type（submit/reset/button）映射到 antd 的 htmlType
+  const resolvedHtmlType: AntButtonProps["htmlType"] =
+    htmlType ?? (type as AntButtonProps["htmlType"]) ?? "button"
 
   return (
-    <Comp
-      data-slot="button"
+    <AntButton
+      {...variantProps}
+      size={antSize}
+      htmlType={resolvedHtmlType}
+      shape={iconOnly ? "default" : undefined}
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
+      className={cn("v0-ui-button", iconOnly && "v0-ui-button-icon", className)}
+      {...(props as object)}
+    >
+      {children}
+    </AntButton>
   )
 }
 
-export { Button, buttonVariants }
+export { Button }
+
+// 兼容旧 API：部分组件（如 calendar）仍引用 buttonVariants 生成类名。
+// 这里返回轻量的占位类名，保证类型与构建兼容。
+export function buttonVariants(opts?: {
+  variant?: Variant
+  size?: Size
+  className?: string
+}): string {
+  return cn("v0-ui-button", opts?.className)
+}

@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, AlertCircle, Plus } from "lucide-react";
+import { Card, Row, Col, Typography, Alert, Space } from "antd";
+import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +44,11 @@ type FormState = {
 
 function today() {
   return new Date().toISOString().slice(0, 10);
+}
+
+// 必填项标记
+function RequiredMark() {
+  return <span style={{ color: "var(--destructive)" }}> *</span>;
 }
 
 export default function NewShopPage() {
@@ -196,242 +202,300 @@ export default function NewShopPage() {
   }
 
   return (
-    <section className="max-w-4xl mx-auto">
-      <div className="rounded-2xl border border-border bg-card p-8 shadow-soft">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-text-100 tracking-tight">店铺录入</h2>
-          <p className="mt-2 text-sm text-text-200 opacity-80">请填写以下信息以录入新店铺，所有带 * 的字段为必填项。</p>
+    <section className="mx-auto max-w-4xl">
+      <Card variant="outlined" styles={{ body: { padding: 32 } }}>
+        <div style={{ marginBottom: 28 }}>
+          <Typography.Title level={3} style={{ marginBottom: 4 }}>
+            店铺录入
+          </Typography.Title>
+          <Typography.Text type="secondary">
+            请填写以下信息以录入新店铺，所有带 * 的字段为必填项。
+          </Typography.Text>
         </div>
-        
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-text-200">录入日期 <span className="text-red-500">*</span></Label>
-            <Input 
-              className="bg-bg-200/50 text-text-200 cursor-not-allowed" 
-              value={form.entryDate} 
-              readOnly 
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-text-100">店铺名 <span className="text-red-500">*</span></Label>
-            <Input 
-              className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple" 
-              required 
-              placeholder="请输入店铺名称"
-              value={form.shopName} 
-              onChange={(e) => setForm({ ...form, shopName: e.target.value })} 
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-text-100">商家ID <span className="text-red-500">*</span></Label>
-            <Input 
-              className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple"
-              required
-              placeholder="请输入商家ID"
-              value={form.merchantId} 
-              onChange={(e) => setForm({ ...form, merchantId: e.target.value })} 
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-text-100">微信群全名 <span className="text-red-500">*</span></Label>
-            <Input 
-              className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple"
-              required
-              placeholder="请输入微信群全名"
-              value={form.wechatGroupName} 
-              onChange={(e) => setForm({ ...form, wechatGroupName: e.target.value })} 
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-text-100">店铺城市 <span className="text-red-500">*</span></Label>
-            <Input 
-              className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple"
-              required
-              placeholder="请输入城市"
-              value={form.city} 
-              onChange={(e) => setForm({ ...form, city: e.target.value })} 
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-text-100">开单销售 <span className="text-red-500">*</span></Label>
-            <Select 
-              value={form.salesName} 
-              onValueChange={applySalesName}
-            >
-              <SelectTrigger className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple">
-                <SelectValue placeholder="请选择销售人员" />
-              </SelectTrigger>
-              <SelectContent>
-                {dropdowns.salesName.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="flex items-center gap-2">
+
+        <form onSubmit={handleSubmit}>
+          <Row gutter={[24, 20]}>
+            <Col xs={24} md={12}>
+              <Label>
+                录入日期 <RequiredMark />
+              </Label>
+              <Input value={form.entryDate} readOnly required />
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>
+                店铺名 <RequiredMark />
+              </Label>
               <Input
-                className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple"
-                placeholder="手动新增开单销售"
-                value={newSalesName}
-                onChange={(e) => setNewSalesName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddSalesName();
-                  }
-                }}
+                required
+                placeholder="请输入店铺名称"
+                value={form.shopName}
+                onChange={(e) => setForm({ ...form, shopName: e.target.value })}
               />
-              <Select value={newSalesCity} onValueChange={setNewSalesCity}>
-                <SelectTrigger className="w-[140px] bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple">
-                  <SelectValue placeholder="所属城市" />
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>
+                商家ID <RequiredMark />
+              </Label>
+              <Input
+                required
+                placeholder="请输入商家ID"
+                value={form.merchantId}
+                onChange={(e) =>
+                  setForm({ ...form, merchantId: e.target.value })
+                }
+              />
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>
+                微信群全名 <RequiredMark />
+              </Label>
+              <Input
+                required
+                placeholder="请输入微信群全名"
+                value={form.wechatGroupName}
+                onChange={(e) =>
+                  setForm({ ...form, wechatGroupName: e.target.value })
+                }
+              />
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>
+                店铺城市 <RequiredMark />
+              </Label>
+              <Input
+                required
+                placeholder="请输入城市"
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+              />
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>
+                开单销售 <RequiredMark />
+              </Label>
+              <Select value={form.salesName} onValueChange={applySalesName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择销售人员" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="武汉">武汉</SelectItem>
-                  <SelectItem value="宜昌">宜昌</SelectItem>
+                  {dropdowns.salesName.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <Button
-                type="button"
-                variant="outline"
-                className="shrink-0"
-                onClick={handleAddSalesName}
-              >
-                <Plus className="h-4 w-4" />
-                添加
-              </Button>
-            </div>
-            <input className="sr-only" tabIndex={-1} required value={form.salesName} onChange={() => undefined} />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-text-100">销售所属城市</Label>
-            <Input
-              className="bg-bg-200/50 text-text-200 cursor-not-allowed"
-              value={form.salesCity}
-              placeholder="选择开单销售后自动带出"
-              readOnly
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-text-100">合同签订日期 <span className="text-red-500">*</span></Label>
-            <Input 
-              type="date" 
-              className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple"
-              required 
-              value={form.contractSignedDate} 
-              onChange={(e) => setForm({ ...form, contractSignedDate: e.target.value })} 
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-text-100">运营模式 <span className="text-red-500">*</span></Label>
-            <Select 
-              value={form.operationMode} 
-              onValueChange={(value) => {
-                setForm({ ...form, operationMode: value });
-                setManualOperationMode("");
-              }}
-            >
-              <SelectTrigger className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple">
-                <SelectValue placeholder="请选择运营模式" />
-              </SelectTrigger>
-              <SelectContent>
-                {SHOP_OPERATION_MODE_OPTIONS.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Input
-              className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple"
-              placeholder="手动填写临时运营模式"
-              value={manualOperationMode}
-              onChange={(event) => setManualOperationMode(event.target.value)}
-            />
-            <input
-              className="sr-only"
-              tabIndex={-1}
-              required
-              value={resolveSubmittedOperationMode(form.operationMode, manualOperationMode)}
-              onChange={() => undefined}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-text-100">负责运营 <span className="text-red-500">*</span></Label>
-            <Select 
-              value={form.operatorName} 
-              onValueChange={(value) => setForm({ ...form, operatorName: value })}
-            >
-              <SelectTrigger className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple">
-                <SelectValue placeholder="请选择负责运营" />
-              </SelectTrigger>
-              <SelectContent>
-                {dropdowns.operatorName.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="flex items-center gap-2">
-              <Input
-                className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple"
-                placeholder="手动新增负责运营"
-                value={newOperatorName}
-                onChange={(e) => setNewOperatorName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddOperatorName();
-                  }
-                }}
+              <Space.Compact style={{ display: "flex", marginTop: 8 }}>
+                <Input
+                  placeholder="手动新增开单销售"
+                  value={newSalesName}
+                  onChange={(e) => setNewSalesName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddSalesName();
+                    }
+                  }}
+                />
+                <div style={{ width: 140, flexShrink: 0 }}>
+                  <Select value={newSalesCity} onValueChange={setNewSalesCity}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="所属城市" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="武汉">武汉</SelectItem>
+                      <SelectItem value="宜昌">宜昌</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  icon={<PlusOutlined />}
+                  onClick={handleAddSalesName}
+                >
+                  添加
+                </Button>
+              </Space.Compact>
+              <input
+                className="sr-only"
+                tabIndex={-1}
+                required
+                value={form.salesName}
+                onChange={() => undefined}
               />
-              <Button
-                type="button"
-                variant="outline"
-                className="shrink-0"
-                onClick={handleAddOperatorName}
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>销售所属城市</Label>
+              <Input
+                value={form.salesCity}
+                placeholder="选择开单销售后自动带出"
+                readOnly
+              />
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>
+                合同签订日期 <RequiredMark />
+              </Label>
+              <Input
+                type="date"
+                required
+                value={form.contractSignedDate}
+                onChange={(e) =>
+                  setForm({ ...form, contractSignedDate: e.target.value })
+                }
+              />
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>
+                运营模式 <RequiredMark />
+              </Label>
+              <Select
+                value={form.operationMode}
+                onValueChange={(value) => {
+                  setForm({ ...form, operationMode: value });
+                  setManualOperationMode("");
+                }}
               >
-                <Plus className="h-4 w-4" />
-                添加
-              </Button>
-            </div>
-            <input className="sr-only" tabIndex={-1} required value={form.operatorName} onChange={() => undefined} />
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-text-100">外卖平台 <span className="text-red-500">*</span></Label>
-            <Select 
-              value={form.deliveryPlatform} 
-              onValueChange={(value) => setForm({ ...form, deliveryPlatform: value })}
-            >
-              <SelectTrigger className="bg-bg-100 text-text-100 shadow-sm focus-ring transition-all duration-fast ease-apple">
-                <SelectValue placeholder="请选择外卖平台" />
-              </SelectTrigger>
-              <SelectContent>
-                {dropdowns.deliveryPlatform.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <input className="sr-only" tabIndex={-1} required value={form.deliveryPlatform} onChange={() => undefined} />
-          </div>
-          
-          <div className="md:col-span-2 pt-4 flex items-center gap-4">
-            <Button 
-              disabled={submitting} 
-              className="flex items-center gap-2 rounded-lg bg-accent-200 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-accent-200/30 hover:bg-accent-200/90 hover:shadow-accent-200/40 disabled:opacity-50 disabled:shadow-none transition-all duration-base ease-apple hover-lift active-press"
-              type="submit"
-            >
-              <Save className="h-4 w-4" />
-              {submitting ? "提交中..." : "提交店铺"}
-            </Button>
-            
-            {error ? (
-              <div className="flex items-center gap-2 text-sm text-destructive animate-in fade-in slide-in-from-left-2">
-                <AlertCircle className="h-4 w-4" />
-                <p>{error}</p>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择运营模式" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SHOP_OPERATION_MODE_OPTIONS.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div style={{ marginTop: 8 }}>
+                <Input
+                  placeholder="手动填写临时运营模式"
+                  value={manualOperationMode}
+                  onChange={(event) =>
+                    setManualOperationMode(event.target.value)
+                  }
+                />
               </div>
-            ) : null}
-          </div>
+              <input
+                className="sr-only"
+                tabIndex={-1}
+                required
+                value={resolveSubmittedOperationMode(
+                  form.operationMode,
+                  manualOperationMode
+                )}
+                onChange={() => undefined}
+              />
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>
+                负责运营 <RequiredMark />
+              </Label>
+              <Select
+                value={form.operatorName}
+                onValueChange={(value) =>
+                  setForm({ ...form, operatorName: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择负责运营" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dropdowns.operatorName.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Space.Compact style={{ display: "flex", marginTop: 8 }}>
+                <Input
+                  placeholder="手动新增负责运营"
+                  value={newOperatorName}
+                  onChange={(e) => setNewOperatorName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddOperatorName();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  icon={<PlusOutlined />}
+                  onClick={handleAddOperatorName}
+                >
+                  添加
+                </Button>
+              </Space.Compact>
+              <input
+                className="sr-only"
+                tabIndex={-1}
+                required
+                value={form.operatorName}
+                onChange={() => undefined}
+              />
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Label>
+                外卖平台 <RequiredMark />
+              </Label>
+              <Select
+                value={form.deliveryPlatform}
+                onValueChange={(value) =>
+                  setForm({ ...form, deliveryPlatform: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择外卖平台" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dropdowns.deliveryPlatform.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <input
+                className="sr-only"
+                tabIndex={-1}
+                required
+                value={form.deliveryPlatform}
+                onChange={() => undefined}
+              />
+            </Col>
+
+            <Col xs={24}>
+              <Space align="center" size={16} style={{ paddingTop: 8 }}>
+                <Button
+                  disabled={submitting}
+                  loading={submitting}
+                  icon={<SaveOutlined />}
+                  type="submit"
+                >
+                  {submitting ? "提交中..." : "提交店铺"}
+                </Button>
+                {error ? (
+                  <Alert type="error" showIcon message={error} banner />
+                ) : null}
+              </Space>
+            </Col>
+          </Row>
         </form>
-      </div>
+      </Card>
     </section>
   );
 }

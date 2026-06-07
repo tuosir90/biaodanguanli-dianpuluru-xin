@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 export type WorkflowFlowCoCompletionTone = "sky" | "teal" | "amber";
 
 export type WorkflowFlowCoCompletionGroup = {
@@ -72,6 +74,69 @@ export function getWorkflowFlowCoCompletionToneClasses(
       "bg-white/80 text-sky-700 dark:bg-bg-100/70 dark:text-sky-200",
     button:
       "border border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100 hover:text-sky-800 dark:border-sky-900/50 dark:bg-sky-900/20 dark:text-sky-200",
+  };
+}
+
+export function getWorkflowFlowCoCompletionToneStyles(
+  tone: WorkflowFlowCoCompletionTone
+): {
+  notice: CSSProperties;
+  chip: CSSProperties;
+  button: CSSProperties;
+} {
+  if (tone === "amber") {
+    return {
+      notice: {
+        backgroundColor: "#fffbeb",
+        borderColor: "#fde68a",
+        color: "#92400e",
+      },
+      chip: {
+        backgroundColor: "rgba(255, 255, 255, 0.82)",
+        color: "#b45309",
+      },
+      button: {
+        backgroundColor: "#fffbeb",
+        borderColor: "#fcd34d",
+        color: "#b45309",
+      },
+    };
+  }
+
+  if (tone === "teal") {
+    return {
+      notice: {
+        backgroundColor: "#f0fdfa",
+        borderColor: "#99f6e4",
+        color: "#115e59",
+      },
+      chip: {
+        backgroundColor: "rgba(255, 255, 255, 0.82)",
+        color: "#0f766e",
+      },
+      button: {
+        backgroundColor: "#f0fdfa",
+        borderColor: "#5eead4",
+        color: "#0f766e",
+      },
+    };
+  }
+
+  return {
+    notice: {
+      backgroundColor: "#f0f9ff",
+      borderColor: "#bae6fd",
+      color: "#075985",
+    },
+    chip: {
+      backgroundColor: "rgba(255, 255, 255, 0.82)",
+      color: "#0369a1",
+    },
+    button: {
+      backgroundColor: "#f0f9ff",
+      borderColor: "#7dd3fc",
+      color: "#0369a1",
+    },
   };
 }
 

@@ -1,8 +1,21 @@
 "use client";
 
-import { KanbanSquare } from "lucide-react";
+import { KanbanSquare, Store, Users } from "lucide-react";
 import dayjs from "dayjs";
-import { DatePicker, Select } from "antd";
+import {
+  Avatar,
+  Card,
+  Col,
+  DatePicker,
+  Empty,
+  Progress,
+  Row,
+  Select,
+  Space,
+  Statistic,
+  Tag,
+  Typography,
+} from "antd";
 import { NiceLineChart } from "@/components/charts/line-chart";
 import type { WorkflowSummary } from "../types";
 
@@ -17,6 +30,10 @@ type WorkflowOverviewSectionProps = {
   onChartOperatorChange: (value: string) => void;
 };
 
+function normalizeOperatorName(operatorName: string) {
+  return operatorName.trim() || "未分配";
+}
+
 export function WorkflowOverviewSection({
   startDate,
   endDate,
@@ -27,6 +44,11 @@ export function WorkflowOverviewSection({
   chartOperator,
   onChartOperatorChange,
 }: WorkflowOverviewSectionProps) {
+  const maxShopCount = Math.max(
+    ...summary.shopCountByOperator.map((item) => Number(item.shopCount ?? 0)),
+    0
+  );
+
   return (
     <>
       <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
@@ -80,28 +102,101 @@ export function WorkflowOverviewSection({
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft hover-lift">
-          <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-text-100">
-            <div className="h-4 w-1 rounded-full bg-accent-200"></div>
-            所有运营接手店铺统计面板
-          </h3>
-          <div className="grid max-h-[300px] grid-cols-2 gap-3 overflow-y-auto pr-2 custom-scrollbar">
-            {summary.shopCountByOperator.map((item) => (
-              <div
-                key={item.operatorName}
-                className="flex items-center justify-between rounded-lg bg-bg-200/50 px-4 py-3 text-sm transition-colors duration-fast ease-apple hover:bg-bg-200"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-100/20 text-xs font-bold text-accent-200">
-                    {item.operatorName.slice(0, 1)}
-                  </div>
-                  <span className="font-medium text-text-100">{item.operatorName || "未分配"}</span>
-                </div>
-                <span className="text-lg font-bold text-accent-200">{item.shopCount}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <Card
+          variant="outlined"
+          className="shadow-soft"
+          styles={{ body: { padding: 16 } }}
+          title={
+            <Space size={8}>
+              <Store className="h-5 w-5 text-accent-200" />
+              <Typography.Text strong>所有运营接手店铺统计面板</Typography.Text>
+            </Space>
+          }
+          extra={<Tag color="blue">{startDate} ~ {endDate}</Tag>}
+        >
+          {summary.shopCountByOperator.length > 0 ? (
+            <div className="max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+              <Row gutter={[8, 8]}>
+                {summary.shopCountByOperator.map((item, index) => {
+                  const operatorName = normalizeOperatorName(item.operatorName);
+                  const shopCount = Number(item.shopCount ?? 0);
+                  const percent =
+                    maxShopCount > 0 ? Math.round((shopCount / maxShopCount) * 100) : 0;
+
+                  return (
+                    <Col xs={24} md={12} key={`${operatorName}-${index}`}>
+                      <div className="rounded-lg border border-border bg-bg-200/50 px-2.5 py-2 transition-colors duration-fast ease-apple hover:bg-bg-200">
+                        <div className="flex items-start justify-between gap-3">
+                          <Space size={8} align="start">
+                            <Avatar
+                              shape="square"
+                              size={28}
+                              style={{
+                                backgroundColor: "var(--accent)",
+                                color: "var(--accent-foreground)",
+                                fontWeight: 700,
+                                fontSize: 12,
+                              }}
+                              icon={
+                                operatorName === "未分配" ? (
+                                  <Users className="h-4 w-4" />
+                                ) : undefined
+                              }
+                            >
+                              {operatorName.slice(0, 1)}
+                            </Avatar>
+                            <div className="min-w-0">
+                              <Typography.Text strong className="block max-w-[120px] truncate text-sm">
+                                {operatorName}
+                              </Typography.Text>
+                              <Tag
+                                color={index === 0 ? "gold" : "default"}
+                                style={{
+                                  marginTop: 2,
+                                  marginInlineEnd: 0,
+                                  fontSize: 10,
+                                  lineHeight: "16px",
+                                }}
+                              >
+                                第 {index + 1} 名
+                              </Tag>
+                            </div>
+                          </Space>
+                          <Statistic
+                            value={shopCount}
+                            suffix="家"
+                            styles={{
+                              content: {
+                                color: "var(--accent-foreground)",
+                                fontSize: 16,
+                                fontWeight: 700,
+                                lineHeight: 1,
+                              },
+                            }}
+                          />
+                        </div>
+                        <Progress
+                          className="mt-1.5"
+                          percent={percent}
+                          showInfo={false}
+                          size="small"
+                          strokeColor="var(--accent-200)"
+                          railColor="var(--bg-300)"
+                        />
+                      </div>
+                    </Col>
+                  );
+                })}
+              </Row>
+            </div>
+          ) : (
+            <Empty
+              className="mt-4"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="暂无运营接手店铺数据"
+            />
+          )}
+        </Card>
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft hover-lift">
           <div className="mb-4 flex items-center justify-between gap-3">

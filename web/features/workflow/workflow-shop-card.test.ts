@@ -327,6 +327,12 @@ describe("WorkflowShopCard", () => {
     expect(html).toContain("border-sky-300 bg-sky-50 text-sky-700");
     expect(html).toContain("border-teal-300 bg-teal-50 text-teal-700");
     expect(html).toContain("border-amber-300 bg-amber-50 text-amber-700");
+    expect(html).toContain("background-color:#f0f9ff");
+    expect(html).toContain("background-color:#f0fdfa");
+    expect(html).toContain("background-color:#fffbeb");
+    expect(html).toContain("border-color:#7dd3fc");
+    expect(html).toContain("border-color:#5eead4");
+    expect(html).toContain("border-color:#fcd34d");
   });
 
   it("饿了么店铺会醒目提示今日需同天完成的成对流程", () => {

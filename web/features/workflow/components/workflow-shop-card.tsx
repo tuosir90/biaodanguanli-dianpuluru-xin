@@ -10,6 +10,7 @@ import {
 import {
   getPendingWorkflowFlowCoCompletionGroups,
   getWorkflowFlowCoCompletionToneClasses,
+  getWorkflowFlowCoCompletionToneStyles,
   type WorkflowFlowCoCompletionTone,
 } from "../flow-co-completion";
 import { getWorkflowFlowProgressKeys } from "@/lib/workflow-flow-metrics";
@@ -332,16 +333,19 @@ function WorkflowShopCardBase({
         <div className="mb-3 space-y-2">
           {pendingCoCompletionGroups.map((group) => {
             const toneClasses = getWorkflowFlowCoCompletionToneClasses(group.tone);
+            const toneStyles = getWorkflowFlowCoCompletionToneStyles(group.tone);
             return (
               <div
                 key={group.label}
                 className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${toneClasses.notice}`}
+                style={toneStyles.notice}
               >
                 <Link2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="font-medium">以下标签需同天完成</span>
                   <span
                     className={`rounded-full px-2 py-0.5 font-semibold ${toneClasses.chip}`}
+                    style={toneStyles.chip}
                   >
                     {group.label}
                   </span>
@@ -434,6 +438,11 @@ function WorkflowShopCardBase({
             !done &&
             pendingCoCompletionToneByKey.has(item.key);
           const pendingCoCompletionTone = pendingCoCompletionToneByKey.get(item.key);
+          const pendingCoCompletionToneStyles = isPendingCoCompletionKey
+            ? getWorkflowFlowCoCompletionToneStyles(
+                pendingCoCompletionTone ?? "sky"
+              ).button
+            : undefined;
           return (
             <Button
               key={item.key}
@@ -441,7 +450,11 @@ function WorkflowShopCardBase({
               type={done ? "primary" : "default"}
               disabled={isLocked}
               onClick={() => onToggleProgress(shop._id, shop.operatorName || "", item.key, item.label)}
-              style={{ width: 176, justifyContent: "flex-start" }}
+              style={{
+                width: 176,
+                justifyContent: "flex-start",
+                ...pendingCoCompletionToneStyles,
+              }}
               className={`h-auto w-[176px] shrink-0 justify-start whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-base ease-apple active-press ${
                 isLocked
                   ? "border border-dashed border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-50 hover:text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200"

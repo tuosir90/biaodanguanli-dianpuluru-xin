@@ -1,9 +1,22 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { FormEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Alert, Button, Card, Col, Input, Row, Select, Space, Typography } from "antd";
+import dayjs, { type Dayjs } from "dayjs";
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  DatePicker,
+  Form,
+  Input,
+  Row,
+  Select,
+  Space,
+  Typography,
+} from "antd";
+import type { FormProps } from "antd";
 import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
 import {
   SHOP_OPERATION_MODE_OPTIONS,
@@ -19,40 +32,47 @@ type Dropdowns = {
   deliveryPlatform: string[];
 };
 
-type FormState = {
-  entryDate: string;
-  shopName: string;
-  merchantId: string;
-  wechatGroupName: string;
-  city: string;
-  salesName: string;
-  salesCity: string;
-  contractSignedDate: string;
-  operationMode: string;
-  operatorName: string;
-  deliveryPlatform: string;
+type ShopFormValues = {
+  entryDate?: Dayjs;
+  shopName?: string;
+  merchantId?: string;
+  wechatGroupName?: string;
+  city?: string;
+  salesName?: string;
+  salesCity?: string;
+  contractSignedDate?: Dayjs;
+  operationMode?: string;
+  operatorName?: string;
+  deliveryPlatform?: string;
 };
 
-function today() {
-  return new Date().toISOString().slice(0, 10);
+function requiredInputRule(label: string) {
+  return [{ required: true, whitespace: true, message: `请输入${label}` }];
 }
 
-// 必填项标记
-function RequiredMark() {
-  return <span style={{ color: "var(--destructive)" }}> *</span>;
-}
-
-function FieldLabel({ children }: { children: ReactNode }) {
-  return (
-    <Typography.Text strong style={{ display: "block", marginBottom: 8 }}>
-      {children}
-    </Typography.Text>
-  );
+function requiredSelectRule(label: string) {
+  return [{ required: true, message: `请选择${label}` }];
 }
 
 export default function NewShopPage() {
   const router = useRouter();
-  const initialDate = useMemo(() => today(), []);
+  const [shopForm] = Form.useForm<ShopFormValues>();
+  const initialValues = useMemo<ShopFormValues>(
+    () => ({
+      entryDate: dayjs(),
+      shopName: "",
+      merchantId: "",
+      wechatGroupName: "",
+      city: "",
+      salesName: "",
+      salesCity: "",
+      contractSignedDate: dayjs(),
+      operationMode: "",
+      operatorName: "",
+      deliveryPlatform: "",
+    }),
+    []
+  );
   const [dropdowns, setDropdowns] = useState<Dropdowns>({
     salesName: [],
     salesCityMap: {},
@@ -66,29 +86,17 @@ export default function NewShopPage() {
   const [newSalesCity, setNewSalesCity] = useState("");
   const [newOperatorName, setNewOperatorName] = useState("");
   const [manualOperationMode, setManualOperationMode] = useState("");
-  const [form, setForm] = useState<FormState>({
-    entryDate: initialDate,
-    shopName: "",
-    merchantId: "",
-    wechatGroupName: "",
-    city: "",
-    salesName: "",
-    salesCity: "",
-    contractSignedDate: initialDate,
-    operationMode: "",
-    operatorName: "",
-    deliveryPlatform: "",
-  });
 
-  function applySalesName(nextSalesName: string) {
+  function applySalesName(nextSalesName: string, salesCityOverride?: string) {
     const resolvedSalesCity =
-      dropdowns.salesCityMap[nextSalesName] || resolveSalesCity(nextSalesName);
+      salesCityOverride ||
+      dropdowns.salesCityMap[nextSalesName] ||
+      resolveSalesCity(nextSalesName);
 
-    setForm((previous) => ({
-      ...previous,
+    shopForm.setFieldsValue({
       salesName: nextSalesName,
       salesCity: resolvedSalesCity,
-    }));
+    });
   }
 
   useEffect(() => {
@@ -131,7 +139,7 @@ export default function NewShopPage() {
         },
       };
     });
-    applySalesName(value);
+    applySalesName(value, salesCity);
     setNewSalesName("");
     setNewSalesCity("");
     setError("");
@@ -151,30 +159,42 @@ export default function NewShopPage() {
       };
     });
 
-    setForm((previous) => ({ ...previous, operatorName: value }));
+    shopForm.setFieldsValue({ operatorName: value });
     setNewOperatorName("");
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const handleSubmit: FormProps<ShopFormValues>["onFinish"] = async (values) => {
     setSubmitting(true);
     setError("");
 
     const operationMode = resolveSubmittedOperationMode(
-      form.operationMode,
+      values.operationMode,
       manualOperationMode
     );
-    const requiredValues = [
-      form.entryDate,
-      form.shopName,
-      form.merchantId,
-      form.wechatGroupName,
-      form.city,
-      form.salesName,
-      form.contractSignedDate,
+    const payload = {
+      entryDate: values.entryDate?.format("YYYY-MM-DD") ?? "",
+      shopName: values.shopName?.trim() ?? "",
+      merchantId: values.merchantId?.trim() ?? "",
+      wechatGroupName: values.wechatGroupName?.trim() ?? "",
+      city: values.city?.trim() ?? "",
+      salesName: values.salesName?.trim() ?? "",
+      salesCity: values.salesCity?.trim() ?? "",
+      contractSignedDate: values.contractSignedDate?.format("YYYY-MM-DD") ?? "",
       operationMode,
-      form.operatorName,
-      form.deliveryPlatform,
+      operatorName: values.operatorName?.trim() ?? "",
+      deliveryPlatform: values.deliveryPlatform?.trim() ?? "",
+    };
+    const requiredValues = [
+      payload.entryDate,
+      payload.shopName,
+      payload.merchantId,
+      payload.wechatGroupName,
+      payload.city,
+      payload.salesName,
+      payload.contractSignedDate,
+      payload.operationMode,
+      payload.operatorName,
+      payload.deliveryPlatform,
     ];
 
     if (requiredValues.some((value) => !String(value ?? "").trim())) {
@@ -186,7 +206,7 @@ export default function NewShopPage() {
     const response = await fetch("/api/shops", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, operationMode }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -198,7 +218,11 @@ export default function NewShopPage() {
 
     router.push("/shops");
     router.refresh();
-  }
+  };
+
+  const handleSubmitFailed: FormProps<ShopFormValues>["onFinishFailed"] = () => {
+    setError("请完整填写所有必填项");
+  };
 
   return (
     <section className="mx-auto max-w-4xl">
@@ -212,83 +236,95 @@ export default function NewShopPage() {
           </Typography.Text>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <Row gutter={[24, 20]}>
+        <Form<ShopFormValues>
+          form={shopForm}
+          name="shop-entry-form"
+          layout="vertical"
+          variant="filled"
+          size="large"
+          initialValues={initialValues}
+          requiredMark
+          scrollToFirstError={{ focus: true }}
+          autoComplete="off"
+          onFinish={handleSubmit}
+          onFinishFailed={handleSubmitFailed}
+        >
+          <Row gutter={[24, 8]}>
             <Col xs={24} md={12}>
-              <FieldLabel>
-                录入日期 <RequiredMark />
-              </FieldLabel>
-              <Input value={form.entryDate} readOnly required />
+              <Form.Item<ShopFormValues>
+                name="entryDate"
+                label="录入日期"
+                rules={requiredSelectRule("录入日期")}
+              >
+                <DatePicker
+                  allowClear={false}
+                  disabled
+                  style={{ width: "100%" }}
+                />
+              </Form.Item>
             </Col>
 
             <Col xs={24} md={12}>
-              <FieldLabel>
-                店铺名 <RequiredMark />
-              </FieldLabel>
-              <Input
-                required
-                placeholder="请输入店铺名称"
-                value={form.shopName}
-                onChange={(e) => setForm({ ...form, shopName: e.target.value })}
-              />
+              <Form.Item<ShopFormValues>
+                name="shopName"
+                label="店铺名"
+                rules={requiredInputRule("店铺名")}
+              >
+                <Input placeholder="请输入店铺名称" />
+              </Form.Item>
             </Col>
 
             <Col xs={24} md={12}>
-              <FieldLabel>
-                商家ID <RequiredMark />
-              </FieldLabel>
-              <Input
-                required
-                placeholder="请输入商家ID"
-                value={form.merchantId}
-                onChange={(e) =>
-                  setForm({ ...form, merchantId: e.target.value })
-                }
-              />
+              <Form.Item<ShopFormValues>
+                name="merchantId"
+                label="商家ID"
+                extra="计算运营绩效都要使用商家ID，请务必仔细填写！"
+                rules={requiredInputRule("商家ID")}
+              >
+                <Input placeholder="请输入商家ID" />
+              </Form.Item>
             </Col>
 
             <Col xs={24} md={12}>
-              <FieldLabel>
-                微信群全名 <RequiredMark />
-              </FieldLabel>
-              <Input
-                required
-                placeholder="请输入微信群全名"
-                value={form.wechatGroupName}
-                onChange={(e) =>
-                  setForm({ ...form, wechatGroupName: e.target.value })
-                }
-              />
+              <Form.Item<ShopFormValues>
+                name="wechatGroupName"
+                label="微信群全名"
+                rules={requiredInputRule("微信群全名")}
+              >
+                <Input placeholder="请输入微信群全名" />
+              </Form.Item>
             </Col>
 
             <Col xs={24} md={12}>
-              <FieldLabel>
-                店铺城市 <RequiredMark />
-              </FieldLabel>
-              <Input
-                required
-                placeholder="请输入城市"
-                value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })}
-              />
+              <Form.Item<ShopFormValues>
+                name="city"
+                label="店铺城市"
+                rules={requiredInputRule("店铺城市")}
+              >
+                <Input placeholder="请输入城市" />
+              </Form.Item>
             </Col>
 
             <Col xs={24} md={12}>
-              <FieldLabel>
-                开单销售 <RequiredMark />
-              </FieldLabel>
-              <Select
-                value={form.salesName || undefined}
-                onChange={applySalesName}
-                placeholder="请选择销售人员"
-                options={dropdowns.salesName.map((item) => ({
-                  value: item,
-                  label: item,
-                }))}
-                style={{ width: "100%", marginTop: 8 }}
-              />
-              <Space.Compact style={{ display: "flex", marginTop: 8 }}>
+              <Form.Item<ShopFormValues>
+                name="salesName"
+                label="开单销售"
+                rules={requiredSelectRule("开单销售")}
+              >
+                <Select
+                  showSearch
+                  optionFilterProp="label"
+                  onChange={(value) => applySalesName(value)}
+                  placeholder="请选择销售人员"
+                  options={dropdowns.salesName.map((item) => ({
+                    value: item,
+                    label: item,
+                  }))}
+                />
+              </Form.Item>
+              <Space.Compact style={{ display: "flex", marginBottom: 24 }}>
                 <Input
+                  variant="filled"
                   placeholder="手动新增开单销售"
                   value={newSalesName}
                   onChange={(e) => setNewSalesName(e.target.value)}
@@ -299,20 +335,21 @@ export default function NewShopPage() {
                     }
                   }}
                 />
-                <div style={{ width: 140, flexShrink: 0 }}>
-                  <Select
-                    value={newSalesCity || undefined}
-                    onChange={setNewSalesCity}
-                    placeholder="所属城市"
-                    options={[
-                      { value: "武汉", label: "武汉" },
-                      { value: "宜昌", label: "宜昌" },
-                    ]}
-                    style={{ width: "100%" }}
-                  />
-                </div>
+                <Select
+                  variant="filled"
+                  value={newSalesCity || undefined}
+                  onChange={setNewSalesCity}
+                  placeholder="所属城市"
+                  options={[
+                    { value: "武汉", label: "武汉" },
+                    { value: "宜昌", label: "宜昌" },
+                  ]}
+                  style={{ width: 140, flexShrink: 0 }}
+                />
                 <Button
                   htmlType="button"
+                  color="default"
+                  variant="filled"
                   icon={<PlusOutlined />}
                   onClick={handleAddSalesName}
                 >
@@ -322,47 +359,42 @@ export default function NewShopPage() {
             </Col>
 
             <Col xs={24} md={12}>
-              <FieldLabel>销售所属城市</FieldLabel>
-              <Input
-                value={form.salesCity}
-                placeholder="选择开单销售后自动带出"
-                readOnly
-              />
+              <Form.Item<ShopFormValues>
+                name="salesCity"
+                label="销售所属城市"
+              >
+                <Input placeholder="选择开单销售后自动带出" readOnly />
+              </Form.Item>
             </Col>
 
             <Col xs={24} md={12}>
-              <FieldLabel>
-                合同签订日期 <RequiredMark />
-              </FieldLabel>
-              <Input
-                type="date"
+              <Form.Item<ShopFormValues>
+                name="contractSignedDate"
+                label="合同签订日期"
+                rules={requiredSelectRule("合同签订日期")}
+              >
+                <DatePicker allowClear={false} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Form.Item<ShopFormValues>
+                name="operationMode"
+                label="运营模式"
                 required
-                value={form.contractSignedDate}
-                onChange={(e) =>
-                  setForm({ ...form, contractSignedDate: e.target.value })
-                }
-              />
-            </Col>
-
-            <Col xs={24} md={12}>
-              <FieldLabel>
-                运营模式 <RequiredMark />
-              </FieldLabel>
-              <Select
-                value={form.operationMode || undefined}
-                onChange={(value) => {
-                  setForm({ ...form, operationMode: value });
-                  setManualOperationMode("");
-                }}
-                placeholder="请选择运营模式"
-                options={SHOP_OPERATION_MODE_OPTIONS.map((item) => ({
-                  value: item,
-                  label: item,
-                }))}
-                style={{ width: "100%", marginTop: 8 }}
-              />
-              <div style={{ marginTop: 8 }}>
+              >
+                <Select
+                  onChange={() => setManualOperationMode("")}
+                  placeholder="请选择运营模式"
+                  options={SHOP_OPERATION_MODE_OPTIONS.map((item) => ({
+                    value: item,
+                    label: item,
+                  }))}
+                />
+              </Form.Item>
+              <div style={{ marginBottom: 24 }}>
                 <Input
+                  variant="filled"
                   placeholder="手动填写临时运营模式"
                   value={manualOperationMode}
                   onChange={(event) =>
@@ -373,23 +405,24 @@ export default function NewShopPage() {
             </Col>
 
             <Col xs={24} md={12}>
-              <FieldLabel>
-                负责运营 <RequiredMark />
-              </FieldLabel>
-              <Select
-                value={form.operatorName || undefined}
-                onChange={(value) =>
-                  setForm({ ...form, operatorName: value })
-                }
-                placeholder="请选择负责运营"
-                options={dropdowns.operatorName.map((item) => ({
-                  value: item,
-                  label: item,
-                }))}
-                style={{ width: "100%", marginTop: 8 }}
-              />
-              <Space.Compact style={{ display: "flex", marginTop: 8 }}>
+              <Form.Item<ShopFormValues>
+                name="operatorName"
+                label="负责运营"
+                rules={requiredSelectRule("负责运营")}
+              >
+                <Select
+                  showSearch
+                  optionFilterProp="label"
+                  placeholder="请选择负责运营"
+                  options={dropdowns.operatorName.map((item) => ({
+                    value: item,
+                    label: item,
+                  }))}
+                />
+              </Form.Item>
+              <Space.Compact style={{ display: "flex", marginBottom: 24 }}>
                 <Input
+                  variant="filled"
                   placeholder="手动新增负责运营"
                   value={newOperatorName}
                   onChange={(e) => setNewOperatorName(e.target.value)}
@@ -402,6 +435,8 @@ export default function NewShopPage() {
                 />
                 <Button
                   htmlType="button"
+                  color="default"
+                  variant="filled"
                   icon={<PlusOutlined />}
                   onClick={handleAddOperatorName}
                 >
@@ -411,41 +446,42 @@ export default function NewShopPage() {
             </Col>
 
             <Col xs={24} md={12}>
-              <FieldLabel>
-                外卖平台 <RequiredMark />
-              </FieldLabel>
-              <Select
-                value={form.deliveryPlatform || undefined}
-                onChange={(value) =>
-                  setForm({ ...form, deliveryPlatform: value })
-                }
-                placeholder="请选择外卖平台"
-                options={dropdowns.deliveryPlatform.map((item) => ({
-                  value: item,
-                  label: item,
-                }))}
-                style={{ width: "100%", marginTop: 8 }}
-              />
+              <Form.Item<ShopFormValues>
+                name="deliveryPlatform"
+                label="外卖平台"
+                rules={requiredSelectRule("外卖平台")}
+              >
+                <Select
+                  placeholder="请选择外卖平台"
+                  options={dropdowns.deliveryPlatform.map((item) => ({
+                    value: item,
+                    label: item,
+                  }))}
+                />
+              </Form.Item>
             </Col>
 
             <Col xs={24}>
-              <Space align="center" size={16} style={{ paddingTop: 8 }}>
-                <Button
-                  disabled={submitting}
-                  loading={submitting}
-                  icon={<SaveOutlined />}
-                  type="primary"
-                  htmlType="submit"
-                >
-                  {submitting ? "提交中..." : "提交店铺"}
-                </Button>
-                {error ? (
-                  <Alert type="error" showIcon title={error} banner />
-                ) : null}
-              </Space>
+              <Form.Item style={{ marginBottom: 0 }}>
+                <Space align="center" size={16} style={{ paddingTop: 8 }}>
+                  <Button
+                    disabled={submitting}
+                    loading={submitting}
+                    icon={<SaveOutlined />}
+                    color="primary"
+                    variant="solid"
+                    htmlType="submit"
+                  >
+                    {submitting ? "提交中..." : "提交店铺"}
+                  </Button>
+                  {error ? (
+                    <Alert type="error" showIcon message={error} banner />
+                  ) : null}
+                </Space>
+              </Form.Item>
             </Col>
           </Row>
-        </form>
+        </Form>
       </Card>
     </section>
   );

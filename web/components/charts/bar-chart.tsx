@@ -28,15 +28,15 @@ export function NiceBarChart({
   const { theme } = useTheme();
   
   const isDark = theme === "dark";
-  
-  // Colors from palette - refined for better aesthetics
-  const barColorStart = isDark ? "#60a5fa" : "#0ea5e9"; // Blue-400 : Sky-500
-  const barColorEnd = isDark ? "#3b82f6" : "#0284c7";   // Blue-500 : Sky-600
-  const textColor = isDark ? "#94a3b8" : "#64748b";     // Slate-400 : Slate-500
-  const splitLineColor = isDark ? "#334155" : "#e2e8f0"; // Slate-700 : Slate-200
-  const tooltipBg = isDark ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.9)";
-  const tooltipBorder = isDark ? "#334155" : "#e2e8f0";
-  const tooltipText = isDark ? "#f8fafc" : "#0f172a";
+
+  // 中性近黑配色，呼应 Ant Design + shadcn 风格
+  const barColorStart = isDark ? "#fafafa" : "#3f3f46"; // 近白 : zinc-700
+  const barColorEnd = isDark ? "#a1a1aa" : "#18181b";   // zinc-400 : 近黑
+  const textColor = isDark ? "#a1a1aa" : "#71717a";     // zinc-400 : zinc-500
+  const splitLineColor = isDark ? "#262626" : "#e7e7e4"; // 边框中性灰
+  const tooltipBg = isDark ? "rgba(10, 10, 10, 0.92)" : "rgba(255, 255, 255, 0.95)";
+  const tooltipBorder = isDark ? "#262626" : "#e7e7e4";
+  const tooltipText = isDark ? "#fafafa" : "#18181b";
 
   const option = {
     grid: {

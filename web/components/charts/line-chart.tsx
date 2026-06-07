@@ -43,12 +43,14 @@ export function NiceLineChart({
     return Array.from(dateSet).sort((a, b) => a.localeCompare(b));
   }, [series]);
 
-  const textColor = isDark ? "#94a3b8" : "#64748b";
-  const splitLineColor = isDark ? "#334155" : "#e2e8f0";
-  const tooltipBg = isDark ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.9)";
-  const tooltipBorder = isDark ? "#334155" : "#e2e8f0";
-  const tooltipText = isDark ? "#f8fafc" : "#0f172a";
-  const palette = ["#0ea5e9", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
+  const textColor = isDark ? "#a1a1aa" : "#71717a";
+  const splitLineColor = isDark ? "#262626" : "#e7e7e4";
+  const tooltipBg = isDark ? "rgba(10, 10, 10, 0.92)" : "rgba(255, 255, 255, 0.95)";
+  const tooltipBorder = isDark ? "#262626" : "#e7e7e4";
+  const tooltipText = isDark ? "#fafafa" : "#18181b";
+  const palette = isDark
+    ? ["#fafafa", "#38bdf8", "#4ade80", "#fbbf24", "#f87171", "#22d3ee"]
+    : ["#18181b", "#0ea5e9", "#22c55e", "#f59e0b", "#ef4444", "#06b6d4"];
 
   const option = {
     color: palette,

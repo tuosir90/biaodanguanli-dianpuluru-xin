@@ -91,7 +91,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const shops = await Shop.find({
+    // shopStatus 为枚举类型，但实际数据可能为空串/缺失，故用宽松过滤条件
+    const activeShopFilter = {
       $or: [
         { shopStatus: "正常" },
         { shopStatus: "新店" },
@@ -99,7 +100,9 @@ export async function GET(request: NextRequest) {
         { shopStatus: "" },
         { shopStatus: { $exists: false } },
       ],
-    })
+    } as Record<string, unknown>;
+
+    const shops = await Shop.find(activeShopFilter)
       .select({
         _id: 1,
         operatorName: 1,

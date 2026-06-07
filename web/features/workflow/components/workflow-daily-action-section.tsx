@@ -62,10 +62,10 @@ export function WorkflowDailyActionSection({
   );
 
   return (
-    <div className="mb-6 rounded-2xl border border-border bg-gradient-to-br from-amber-50/80 to-red-50/40 p-5 shadow-soft dark:from-amber-950/20 dark:to-red-950/10">
+    <div className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-soft">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 to-red-100 text-red-700 dark:from-amber-900/30 dark:to-red-900/30 dark:text-red-300">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-200 text-text-100">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6M9 8h6m4 10H5a2 2 0 01-2-2V8a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2z" />
             </svg>
@@ -79,19 +79,19 @@ export function WorkflowDailyActionSection({
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl bg-white/70 px-3 py-2 dark:bg-bg-100/40">
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-text-200 shadow-sm dark:bg-bg-100">
+      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl bg-bg-200/60 px-3 py-2">
+        <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-text-200">
           当前待处理店铺：{dailyActionTotalPendingShops}
         </span>
         {dailyActionFilterOperator ? (
           <>
-            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+            <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
               当前筛选：{dailyActionFilterOperator} · 今日待处理店铺
             </span>
             <Button
               type="button"
               variant="ghost"
-              className="h-auto rounded-full bg-white px-3 py-1 text-xs font-medium text-text-200 shadow-sm hover:bg-bg-200 dark:bg-bg-100"
+              className="h-auto rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-text-200 hover:bg-bg-200 hover:text-text-100"
               onClick={onClearDailyActionFilter}
             >
               清空筛选
@@ -118,15 +118,15 @@ export function WorkflowDailyActionSection({
 
                 return (
                   <div key={`daily-action-${item.operatorName}`} className="space-y-3">
-                    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                    <div className="rounded-xl border border-border bg-bg-200/40 p-4">
                       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-red-100 px-2 text-xs font-bold text-red-700 dark:from-amber-900/30 dark:to-red-900/30 dark:text-red-300">
+                          <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-primary px-2 text-xs font-bold text-primary-foreground">
                             {normalizedOperatorName.slice(0, 1)}
                           </span>
                           <span className="text-sm font-semibold text-text-100">{normalizedOperatorName}</span>
                         </div>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-text-200 shadow-sm dark:bg-bg-100">
+                        <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-text-200">
                           今日待处理：{item.pendingShopCount}家
                         </span>
                       </div>
@@ -144,10 +144,10 @@ export function WorkflowDailyActionSection({
                         <button
                           type="button"
                           onClick={() => onApplyDailyActionFilter(item.operatorName)}
-                          className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                          className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
                             isActiveOperator
-                              ? "bg-red-600 text-white shadow"
-                              : "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
+                              ? "border-primary bg-primary text-primary-foreground shadow ring-2 ring-primary/30"
+                              : "border-border bg-card text-text-100 hover:border-text-200 hover:bg-bg-200"
                           }`}
                         >
                           今日待处理 {item.pendingShopCount} 家
@@ -156,7 +156,7 @@ export function WorkflowDailyActionSection({
                           <Button
                             type="button"
                             variant="ghost"
-                            className="h-auto rounded-full bg-bg-100 px-3 py-1.5 text-xs font-medium text-text-200 shadow-sm hover:bg-bg-200 hover:text-text-100"
+                            className="h-auto rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-text-200 hover:bg-bg-200 hover:text-text-100"
                             onClick={() => onOpenFlowHistory(normalizedOperatorName)}
                           >
                             {isFlowHistoryOpen ? "收起流程历史" : "查看流程历史"}
@@ -164,7 +164,7 @@ export function WorkflowDailyActionSection({
                           <Button
                             type="button"
                             variant="ghost"
-                            className="h-auto rounded-full bg-bg-100 px-3 py-1.5 text-xs font-medium text-text-200 shadow-sm hover:bg-bg-200 hover:text-text-100"
+                            className="h-auto rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-text-200 hover:bg-bg-200 hover:text-text-100"
                             onClick={() => onOpenPatrolHistory(normalizedOperatorName)}
                           >
                             {isPatrolHistoryOpen ? "收起巡店历史" : "查看巡店历史"}

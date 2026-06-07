@@ -44,7 +44,7 @@ export function WorkflowHistoryPanel({
           <Button
             type="button"
             variant="ghost"
-            className={`h-auto rounded-full px-3 py-1 text-xs ${historyRange === "today" ? "bg-accent-200 text-white" : "bg-bg-100 text-text-200"}`}
+            className={`h-auto rounded-full border px-3 py-1 text-xs ${historyRange === "today" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-text-200 hover:bg-bg-200"}`}
             onClick={() => onRangeChange("today")}
           >
             今天
@@ -52,7 +52,7 @@ export function WorkflowHistoryPanel({
           <Button
             type="button"
             variant="ghost"
-            className={`h-auto rounded-full px-3 py-1 text-xs ${historyRange === "7d" ? "bg-accent-200 text-white" : "bg-bg-100 text-text-200"}`}
+            className={`h-auto rounded-full border px-3 py-1 text-xs ${historyRange === "7d" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-text-200 hover:bg-bg-200"}`}
             onClick={() => onRangeChange("7d")}
           >
             近7天
@@ -61,7 +61,7 @@ export function WorkflowHistoryPanel({
             <Button
               type="button"
               variant="ghost"
-              className="h-auto rounded-full bg-bg-100 px-3 py-1 text-xs text-text-200"
+              className="h-auto rounded-full border border-border bg-card px-3 py-1 text-xs text-text-200 hover:bg-bg-200"
               onClick={onClearOperator}
             >
               当前运营：{historyOperator}（清除）

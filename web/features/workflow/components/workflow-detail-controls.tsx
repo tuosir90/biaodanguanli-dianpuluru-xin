@@ -64,9 +64,9 @@ export function WorkflowDetailControls({
             默认按分页加载店铺数据；每页仅展示{DETAIL_PAGE_SIZE}家店铺
           </p>
         </div>
-        <div className="space-y-1 rounded-full border border-accent-200/20 bg-accent-100/10 px-3 py-1.5 text-xs font-medium text-accent-200">
+        <div className="space-y-1 rounded-xl border border-border bg-bg-200/60 px-3 py-1.5 text-xs font-medium text-text-100">
           <div>当前运营：{selectedOperator === ALL_OPERATORS ? "全部" : selectedOperator}</div>
-          <div>店铺总数：{currentOperatorShopCount}</div>
+          <div className="text-text-200">店铺总数：{currentOperatorShopCount}</div>
         </div>
       </div>
 
@@ -76,10 +76,10 @@ export function WorkflowDetailControls({
           type="button"
           variant="ghost"
           onClick={() => onSelectOperator(ALL_OPERATORS)}
-          className={`h-auto rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-base ease-apple active-press ${
+          className={`h-auto rounded-full border px-4 py-1.5 text-sm font-medium transition-all duration-base ease-apple active-press ${
             selectedOperator === ALL_OPERATORS
-              ? "scale-105 bg-accent-200 text-white shadow-md shadow-accent-200/20 hover:bg-accent-200 hover:text-white"
-              : "bg-bg-200 text-text-200 hover:bg-bg-300 hover:text-text-100"
+              ? "border-primary bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 hover:bg-primary hover:text-primary-foreground"
+              : "border-border bg-card text-text-200 hover:border-text-200 hover:bg-bg-200 hover:text-text-100"
           }`}
         >
           全部
@@ -90,10 +90,10 @@ export function WorkflowDetailControls({
             type="button"
             variant="ghost"
             onClick={() => onSelectOperator(name)}
-            className={`h-auto rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-base ease-apple active-press ${
+            className={`h-auto rounded-full border px-4 py-1.5 text-sm font-medium transition-all duration-base ease-apple active-press ${
               selectedOperator === name
-                ? "scale-105 bg-accent-200 text-white shadow-md shadow-accent-200/20 hover:bg-accent-200 hover:text-white"
-                : "bg-bg-200 text-text-200 hover:bg-bg-300 hover:text-text-100"
+                ? "border-primary bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 hover:bg-primary hover:text-primary-foreground"
+                : "border-border bg-card text-text-200 hover:border-text-200 hover:bg-bg-200 hover:text-text-100"
             }`}
           >
             {name}

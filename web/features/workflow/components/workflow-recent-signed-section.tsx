@@ -38,7 +38,7 @@ export function WorkflowRecentSignedSection({
   return (
     <div className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-soft">
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-200 text-text-100">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10m-11 8h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
@@ -49,8 +49,8 @@ export function WorkflowRecentSignedSection({
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl bg-sky-50/60 px-3 py-2 dark:bg-sky-900/10">
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-text-200 shadow-sm dark:bg-bg-100">
+      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl bg-bg-200/60 px-3 py-2">
+        <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-text-200">
           当前{RECENT_SIGNED_WINDOW_LABEL}店铺：{recentSignedTotalShops}
         </span>
       </div>
@@ -72,15 +72,15 @@ export function WorkflowRecentSignedSection({
                 const detailLoading = recentSignedDetailLoadingOperator === normalizedOperatorName;
 
                 return (
-                  <div key={`recent-signed-${item.operatorName}`} className="rounded-xl border border-border bg-gradient-to-r from-sky-50/60 to-bg-100/30 p-4 dark:from-sky-900/10">
+                  <div key={`recent-signed-${item.operatorName}`} className="rounded-xl border border-border bg-bg-200/40 p-4">
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-sky-100 px-2 text-xs font-bold text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+                        <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-primary px-2 text-xs font-bold text-primary-foreground">
                           {normalizedOperatorName.slice(0, 1)}
                         </span>
                         <span className="text-sm font-semibold text-text-100">{normalizedOperatorName}</span>
                       </div>
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-text-200 shadow-sm dark:bg-bg-100">
+                      <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-text-200">
                         {RECENT_SIGNED_WINDOW_LABEL}店铺：{item.recentSignedShopCount}家
                       </span>
                     </div>
@@ -88,17 +88,17 @@ export function WorkflowRecentSignedSection({
                     <button
                       type="button"
                       onClick={() => onToggleRecentSignedDetails(item.operatorName)}
-                      className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                      className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
                         isExpanded
-                          ? "bg-sky-600 text-white shadow"
-                          : "bg-sky-100 text-sky-700 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300"
+                          ? "border-primary bg-primary text-primary-foreground shadow ring-2 ring-primary/30"
+                          : "border-border bg-card text-text-100 hover:border-text-200 hover:bg-bg-200"
                       }`}
                     >
                       {isExpanded ? "收起店铺明细" : `查看 ${item.recentSignedShopCount} 家提醒店铺`}
                     </button>
 
                     {isExpanded ? (
-                      <div className="mt-4 rounded-xl border border-border bg-white/80 p-4 dark:bg-bg-100/50">
+                      <div className="mt-4 rounded-xl border border-border bg-card p-4">
                         <RecentSignedReminderCopyBox />
                         <div className="mb-3 text-xs text-text-200">
                           共 {detailTotal} 家，当前展示 {detailItems.length} 家

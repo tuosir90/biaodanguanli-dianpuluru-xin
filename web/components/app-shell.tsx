@@ -1,11 +1,15 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Layout, theme as antdTheme } from "antd";
 import { AppSidebar } from "@/components/app-sidebar";
 import { resolveAppShellView } from "@/lib/app-shell-view";
-import { getFrontendAuthStatus } from "@/lib/frontend-auth";
+import {
+  FRONTEND_AUTH_CHANGE_EVENT,
+  FRONTEND_AUTH_KEY,
+  getFrontendAuthStatus,
+} from "@/lib/frontend-auth";
 
 const { Content } = Layout;
 
@@ -13,30 +17,58 @@ type AppShellProps = {
   children: ReactNode;
 };
 
+function subscribeFrontendAuth(callback: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key && event.key !== FRONTEND_AUTH_KEY) {
+      return;
+    }
+    callback();
+  };
+
+  window.addEventListener("storage", handleStorage);
+  window.addEventListener(FRONTEND_AUTH_CHANGE_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener(FRONTEND_AUTH_CHANGE_EVENT, callback);
+  };
+}
+
+function subscribeHydration() {
+  return () => undefined;
+}
+
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { token } = antdTheme.useToken();
   const hideSidebar = pathname.startsWith("/login");
-  const [hasHydrated, setHasHydrated] = useState(false);
-  const [isAuthed, setIsAuthed] = useState(false);
+  const hasHydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
+  const isAuthed = useSyncExternalStore(
+    subscribeFrontendAuth,
+    getFrontendAuthStatus,
+    () => false
+  );
 
   useEffect(() => {
-    const nextAuthStatus = getFrontendAuthStatus();
-    setHasHydrated(true);
-    setIsAuthed(nextAuthStatus);
-
     if (hideSidebar) {
-      if (nextAuthStatus) {
+      if (isAuthed) {
         router.replace("/shops");
       }
       return;
     }
 
-    if (!nextAuthStatus) {
+    if (!hasHydrated) {
+      return;
+    }
+
+    if (!isAuthed) {
       router.replace("/login");
     }
-  }, [hideSidebar, pathname, router]);
+  }, [hasHydrated, hideSidebar, isAuthed, pathname, router]);
 
   const view = resolveAppShellView({
     hideSidebar,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Card, Table, Tag, Typography, Space, Avatar } from "antd";
+import { Avatar, Button, Card, Input, Select, Space, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
   ArrowUpDown,
@@ -13,15 +13,6 @@ import {
   Pencil,
   Check,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   getShopExportAuthStatus,
   setShopExportAuthStatus,
@@ -94,26 +85,24 @@ function FilterSelect({
   formatOptionLabel?: (item: string) => string;
 }) {
   return (
-    <div className="space-y-2 rounded-xl border border-border bg-bg-200/50 p-4 min-h-[120px]">
-      <label className="text-xs font-semibold text-text-200 uppercase tracking-wider">
+    <div className="flex w-[180px] shrink-0 flex-col gap-1">
+      <label className="text-xs font-semibold text-text-200">
         {label}
       </label>
       <Select
+        variant="filled"
+        showSearch={{ optionFilterProp: "label" }}
         value={value.length > 0 ? value[0] : "all"}
-        onValueChange={(val) => onChange(val === "all" ? [] : [val])}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="全部" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">全部</SelectItem>
-          {options.map((item) => (
-            <SelectItem key={item} value={item}>
-              {formatOptionLabel ? formatOptionLabel(item) : item}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        onChange={(val) => onChange(val === "all" ? [] : [val])}
+        options={[
+          { value: "all", label: "全部" },
+          ...options.map((item) => ({
+            value: item,
+            label: formatOptionLabel ? formatOptionLabel(item) : item,
+          })),
+        ]}
+        style={{ width: "100%" }}
+      />
     </div>
   );
 }
@@ -411,16 +400,15 @@ export function ShopsTableClient() {
                   disabled={isSaving}
                 />
                 <Button
-                  type="button"
-                  size="sm"
+                  htmlType="button"
+                  size="small"
                   icon={<Check className="h-3.5 w-3.5" />}
                   onClick={() => void saveShopName(row)}
                   disabled={isSaving}
                 />
                 <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
+                  htmlType="button"
+                  size="small"
                   icon={<X className="h-3.5 w-3.5" />}
                   onClick={cancelEditShopName}
                   disabled={isSaving}
@@ -435,9 +423,9 @@ export function ShopsTableClient() {
                 {row.shopName ?? ""}
               </span>
               <Button
-                type="button"
-                size="sm"
-                variant="ghost"
+                htmlType="button"
+                size="small"
+                type="text"
                 icon={<Pencil className="h-3.5 w-3.5" />}
                 onClick={() => startEditShopName(row)}
               />
@@ -533,16 +521,15 @@ export function ShopsTableClient() {
                   disabled={isSaving}
                 />
                 <Button
-                  type="button"
-                  size="sm"
+                  htmlType="button"
+                  size="small"
                   icon={<Check className="h-3.5 w-3.5" />}
                   onClick={() => void saveOperationMode(row)}
                   disabled={isSaving}
                 />
                 <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
+                  htmlType="button"
+                  size="small"
                   icon={<X className="h-3.5 w-3.5" />}
                   onClick={cancelEditOperationMode}
                   disabled={isSaving}
@@ -555,9 +542,9 @@ export function ShopsTableClient() {
             <div className="flex items-center gap-2">
               <span>{row.operationMode ?? ""}</span>
               <Button
-                type="button"
-                size="sm"
-                variant="ghost"
+                htmlType="button"
+                size="small"
+                type="text"
                 icon={<Pencil className="h-3.5 w-3.5" />}
                 onClick={() => startEditOperationMode(row)}
               />
@@ -819,18 +806,22 @@ export function ShopsTableClient() {
               支持多维度筛选与数据导出
             </Typography.Text>
           </div>
-          <Space>
+          <Space size={8} className="shrink-0 whitespace-nowrap">
             <Button
-              type="button"
-              variant="outline"
+              htmlType="button"
+              color="primary"
+              variant="solid"
               icon={<Download className="h-4 w-4" />}
               onClick={handleExportAll}
               disabled={exporting}
+              loading={exporting}
             >
               {exporting ? "导出中..." : "导出全部Excel"}
             </Button>
             <Button
-              variant="outline"
+              htmlType="button"
+              color="default"
+              variant="filled"
               icon={<X className="h-4 w-4" />}
               onClick={() => {
                 setLoading(true);
@@ -852,7 +843,7 @@ export function ShopsTableClient() {
         </div>
 
         <div className="mt-6 overflow-x-auto pb-2">
-          <div className="grid min-w-[1120px] grid-cols-7 gap-4 xl:min-w-0">
+          <div className="flex min-w-max items-end gap-3 rounded-xl border border-border bg-bg-100/60 p-3">
             <FilterSelect
               label="负责运营"
               options={options.operatorNames}
@@ -866,46 +857,43 @@ export function ShopsTableClient() {
               }
             />
 
-            <div className="space-y-2 rounded-xl border border-border bg-bg-200/50 p-4 min-h-[120px]">
-              <label className="text-xs font-semibold text-text-200 uppercase tracking-wider">
+            <div className="flex w-[190px] shrink-0 flex-col gap-1">
+              <label className="text-xs font-semibold text-text-200">
                 店铺名筛选
               </label>
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  value={shopNameKeyword}
-                  onChange={(event) =>
-                    handleShopNameKeywordChange(event.target.value)
-                  }
-                  placeholder="输入店铺名查找"
-                />
-                <div className="text-xs text-text-200">支持关键词匹配</div>
-              </div>
+              <Input
+                variant="filled"
+                type="text"
+                value={shopNameKeyword}
+                onChange={(event) =>
+                  handleShopNameKeywordChange(event.target.value)
+                }
+                placeholder="输入店铺名查找"
+              />
             </div>
 
-            <div className="space-y-2 rounded-xl border border-border bg-bg-200/50 p-4 min-h-[120px]">
-              <label className="text-xs font-semibold text-text-200 uppercase tracking-wider">
+            <div className="flex w-[180px] shrink-0 flex-col gap-1">
+              <label className="text-xs font-semibold text-text-200">
                 商家ID筛选
               </label>
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  value={merchantIdKeyword}
-                  onChange={(event) =>
-                    handleMerchantIdKeywordChange(event.target.value)
-                  }
-                  placeholder="输入商家ID查找"
-                />
-                <div className="text-xs text-text-200">支持关键词匹配</div>
-              </div>
+              <Input
+                variant="filled"
+                type="text"
+                value={merchantIdKeyword}
+                onChange={(event) =>
+                  handleMerchantIdKeywordChange(event.target.value)
+                }
+                placeholder="输入商家ID查找"
+              />
             </div>
 
-            <div className="space-y-2 rounded-xl border border-border bg-bg-200/50 p-4 min-h-[120px]">
-              <label className="text-xs font-semibold text-text-200 uppercase tracking-wider">
+            <div className="flex w-[300px] shrink-0 flex-col gap-1">
+              <label className="text-xs font-semibold text-text-200">
                 合同签订日期筛选
               </label>
-              <div className="space-y-2">
+              <div className="flex gap-2">
                 <Input
+                  variant="filled"
                   type="date"
                   value={startDate}
                   onChange={(event) =>
@@ -913,17 +901,11 @@ export function ShopsTableClient() {
                   }
                 />
                 <Input
+                  variant="filled"
                   type="date"
                   value={endDate}
                   onChange={(event) => handleEndDateChange(event.target.value)}
                 />
-                <div className="text-xs text-text-200">
-                  {usingCustomRange
-                    ? `当前按合同签订日期范围查询（第${filterPage}页，每页${FILTER_PAGE_SIZE}家）`
-                    : hasAnyFilter
-                      ? `当前为筛选结果分页展示（第${filterPage}页，每页${FILTER_PAGE_SIZE}家）`
-                      : `当前为店铺分页展示（第${windowPage}页，每页${WINDOW_PAGE_SIZE}家）`}
-                </div>
               </div>
             </div>
 
@@ -952,6 +934,13 @@ export function ShopsTableClient() {
               onChange={handleSalesCityChange}
             />
           </div>
+          <div className="mt-2 text-xs text-text-200">
+            {usingCustomRange
+              ? `当前按合同签订日期范围查询（第${filterPage}页，每页${FILTER_PAGE_SIZE}家）`
+              : hasAnyFilter
+                ? `当前为筛选结果分页展示（第${filterPage}页，每页${FILTER_PAGE_SIZE}家）`
+                : `当前为店铺分页展示（第${windowPage}页，每页${WINDOW_PAGE_SIZE}家）`}
+          </div>
         </div>
       </Card>
 
@@ -972,9 +961,8 @@ export function ShopsTableClient() {
           ) : null}
           <Space>
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
+              htmlType="button"
+              size="small"
               disabled={loading || (hasAnyFilter ? filterPage <= 1 : windowPage <= 1)}
               onClick={() => {
                 setLoading(true);
@@ -988,9 +976,8 @@ export function ShopsTableClient() {
               上一页
             </Button>
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
+              htmlType="button"
+              size="small"
               disabled={loading || !hasNextWindow}
               onClick={() => {
                 setLoading(true);

@@ -25,6 +25,11 @@ import {
   resolveEffectiveShopStatus,
   toValidDate,
 } from "@/lib/workflow-daily-action-utils";
+import {
+  buildWorkflowDailyActionShopItemsCacheKey,
+  getCachedWorkflowDailyActionShopItems,
+  setCachedWorkflowDailyActionShopItems,
+} from "@/lib/workflow-read-cache";
 import { Shop } from "@/models/shop";
 import { WorkflowProgressLog } from "@/models/workflow-progress-log";
 
@@ -54,16 +59,34 @@ export type WorkflowDailyActionShopItem = ShopLite & {
   dailyPointTotalUpdatedDateKey?: string;
 };
 
-export async function fetchWorkflowDailyActionShopItems(params?: {
+type FetchWorkflowDailyActionShopItemsParams = {
   operatorName?: string;
   shopNameKeyword?: string;
   merchantIdKeyword?: string;
   statusKeyword?: string;
-}) {
+  includeDailyPointTotal?: boolean;
+};
+
+export async function fetchWorkflowDailyActionShopItems(
+  params?: FetchWorkflowDailyActionShopItemsParams
+) {
+  const includeDailyPointTotal = params?.includeDailyPointTotal !== false;
+  const cacheKey = buildWorkflowDailyActionShopItemsCacheKey({
+    ...params,
+    includeDailyPointTotal,
+  });
+  const cached =
+    getCachedWorkflowDailyActionShopItems<WorkflowDailyActionShopItem[]>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const { todayDateKey, start, end } = getTodayRangeShanghai();
   const statusKeyword = normalizeText(params?.statusKeyword);
   if (statusKeyword === "已解约" || statusKeyword === "无效店铺") {
-    return [] as WorkflowDailyActionShopItem[];
+    const emptyItems = [] as WorkflowDailyActionShopItem[];
+    setCachedWorkflowDailyActionShopItems(cacheKey, emptyItems);
+    return emptyItems;
   }
 
   const shopMatch: Record<string, unknown> = {
@@ -95,7 +118,9 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
     .lean<ShopLite[]>();
 
   if (shops.length === 0) {
-    return [] as WorkflowDailyActionShopItem[];
+    const emptyItems = [] as WorkflowDailyActionShopItem[];
+    setCachedWorkflowDailyActionShopItems(cacheKey, emptyItems);
+    return emptyItems;
   }
 
   const shopIds = shops.map((shop) => shop._id);
@@ -111,7 +136,9 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
       fetchWorkflowStatusSnapshotByShopIds(shopIds, WORKFLOW_FLOW_PROGRESS_KEYS),
       fetchWorkflowFlowLockLookup(shops),
       fetchLatestDailyPointShopLookup(),
-      fetchDailyPointTotalAmountLookup(shops),
+      includeDailyPointTotal
+        ? fetchDailyPointTotalAmountLookup(shops)
+        : Promise.resolve(null),
       WorkflowProgressLog.aggregate<{ shopId?: unknown; progressKey?: string }>([
         {
           $match: {
@@ -241,7 +268,7 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
     })
   );
 
-  return items
+  const result = items
     .map((item) => {
       const shop = shopMap.get(item.shopId)!;
       const effectiveStatus = resolveEffectiveShopStatus(
@@ -249,14 +276,13 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
         shop.contractSignedDate,
         todayDateKey
       );
-      const dailyPointTotalAmountInfo = getDailyPointTotalAmountInfo(
-        dailyPointTotalLookup,
-        {
-          merchantId: shop.merchantId,
-          shopName: shop.shopName,
-          deliveryPlatform: shop.deliveryPlatform,
-        }
-      );
+      const dailyPointTotalAmountInfo = dailyPointTotalLookup
+        ? getDailyPointTotalAmountInfo(dailyPointTotalLookup, {
+            merchantId: shop.merchantId,
+            shopName: shop.shopName,
+            deliveryPlatform: shop.deliveryPlatform,
+          })
+        : null;
       return {
         ...shop,
         _id: item.shopId,
@@ -287,4 +313,7 @@ export async function fetchWorkflowDailyActionShopItems(params?: {
       }
       return normalizeText(left.shopName).localeCompare(normalizeText(right.shopName), "zh-CN");
     });
+
+  setCachedWorkflowDailyActionShopItems(cacheKey, result);
+  return result;
 }

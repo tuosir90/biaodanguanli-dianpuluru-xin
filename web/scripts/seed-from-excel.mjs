@@ -19,7 +19,7 @@ const excelPath = path.resolve(
 );
 
 const sheetNameIncludes = "外卖运营店铺数据统计";
-const wuhanSalesNames = new Set(["屈维涛", "李帅", "向文强"]);
+const wuhanSalesNames = new Set(["屈维涛", "李帅", "向文强", "韩大武"]);
 
 function normalizeText(value) {
   if (value === null || value === undefined) return "";

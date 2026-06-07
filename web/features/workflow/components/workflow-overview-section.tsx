@@ -1,15 +1,9 @@
 "use client";
 
 import { KanbanSquare } from "lucide-react";
+import dayjs from "dayjs";
+import { DatePicker, Select } from "antd";
 import { NiceLineChart } from "@/components/charts/line-chart";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { WorkflowSummary } from "../types";
 
 type WorkflowOverviewSectionProps = {
@@ -51,22 +45,34 @@ export function WorkflowOverviewSection({
               <label className="absolute -top-2 left-2 z-10 bg-card px-1 text-[10px] font-medium text-text-200">
                 开始日期
               </label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(event) => onStartDateChange(event.target.value)}
-                className="rounded-lg border-border bg-bg-100 px-3 py-2 text-sm text-text-100 shadow-sm focus-visible:border-accent-200 focus-visible:ring-accent-200/20"
+              <DatePicker
+                variant="filled"
+                format="YYYY-MM-DD"
+                allowClear={false}
+                value={startDate ? dayjs(startDate) : null}
+                onChange={(date) => {
+                  if (date) {
+                    onStartDateChange(date.format("YYYY-MM-DD"));
+                  }
+                }}
+                className="h-9 w-[150px] text-sm"
               />
             </div>
             <div className="relative">
               <label className="absolute -top-2 left-2 z-10 bg-card px-1 text-[10px] font-medium text-text-200">
                 结束日期
               </label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(event) => onEndDateChange(event.target.value)}
-                className="rounded-lg border-border bg-bg-100 px-3 py-2 text-sm text-text-100 shadow-sm focus-visible:border-accent-200 focus-visible:ring-accent-200/20"
+              <DatePicker
+                variant="filled"
+                format="YYYY-MM-DD"
+                allowClear={false}
+                value={endDate ? dayjs(endDate) : null}
+                onChange={(date) => {
+                  if (date) {
+                    onEndDateChange(date.format("YYYY-MM-DD"));
+                  }
+                }}
+                className="h-9 w-[150px] text-sm"
               />
             </div>
           </div>
@@ -105,20 +111,13 @@ export function WorkflowOverviewSection({
             </h3>
             <Select
               value={chartOperator || "ALL"}
-              onValueChange={(val) => onChartOperatorChange(val === "ALL" ? "" : val)}
-            >
-              <SelectTrigger className="w-[120px] rounded-lg border-border bg-bg-100 px-3 py-1.5 text-sm text-text-100 focus-visible:ring-accent-200/20 transition-all duration-fast ease-apple">
-                <SelectValue placeholder="全部运营" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">全部运营</SelectItem>
-                {operators.map((name) => (
-                  <SelectItem key={name} value={name}>
-                    {name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(val) => onChartOperatorChange(val === "ALL" ? "" : val)}
+              options={[
+                { value: "ALL", label: "全部运营" },
+                ...operators.map((name) => ({ value: name, label: name })),
+              ]}
+              style={{ width: 140 }}
+            />
           </div>
           <div className="mb-4 inline-block rounded-lg bg-bg-200/50 p-2 text-xs text-text-200">
             统计区间：{startDate} ~ {endDate}

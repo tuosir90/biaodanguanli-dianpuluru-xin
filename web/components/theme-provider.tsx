@@ -1,9 +1,13 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import dayjs from "dayjs";
+import "dayjs/locale/zh-cn";
 import { ConfigProvider, App as AntdApp } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { darkTheme, lightTheme } from "@/lib/antd-theme";
+
+dayjs.locale("zh-cn");
 
 type Theme = "light" | "dark";
 
@@ -25,6 +29,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem("theme", theme);
   }, [theme]);
 

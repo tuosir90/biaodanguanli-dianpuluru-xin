@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
+import { Button, Input } from "antd";
 import { SalesInvalidShopsDetailsTable } from "@/components/sales-invalid-shops-details-table";
 import {
   defaultMonth,
@@ -12,8 +13,6 @@ import {
 } from "@/components/sales-invalid-shops-report-helpers";
 import { SalesInvalidShopsSummaryGrid } from "@/components/sales-invalid-shops-summary-grid";
 import { SalesInvalidShopsViewTabs } from "@/components/sales-invalid-shops-view-tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import type {
   SalesInvalidShopsResponse,
   SalesInvalidShopsView,
@@ -135,8 +134,7 @@ export function SalesInvalidShopsReport() {
           />
           <div className="flex flex-wrap gap-3">
             <Button
-              type="button"
-              variant="outline"
+              htmlType="button"
               onClick={() => {
                 setLoading(true);
                 setPage(1);

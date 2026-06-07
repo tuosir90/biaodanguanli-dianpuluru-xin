@@ -50,6 +50,8 @@ describe("WorkflowDailyActionSection", () => {
           },
         ],
         dailyActionTotalPendingShops: 7,
+        dailyActionLoading: false,
+        dailyActionError: "",
         dailyActionFilterOperator: "王涛",
         onClearDailyActionFilter: () => undefined,
         onApplyDailyActionFilter: () => undefined,

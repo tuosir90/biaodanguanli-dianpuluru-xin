@@ -41,6 +41,7 @@ describe("WorkflowShopCard", () => {
     );
 
     expect(html).toContain("无效店铺");
+    expect(html.indexOf("无效店铺")).toBeLessThan(html.indexOf("商家ID:"));
     expect(html).not.toContain("最近日期连续五天没有抽到钱");
   });
 
@@ -63,6 +64,7 @@ describe("WorkflowShopCard", () => {
     );
 
     expect(html).toContain("新店");
+    expect(html.indexOf("新店")).toBeLessThan(html.indexOf("商家ID:"));
     expect(html).not.toContain("签约日起5天内自动标记新店");
   });
 
@@ -117,7 +119,7 @@ describe("WorkflowShopCard", () => {
     expect(html).not.toContain("累计回款:</span><span class=\"font-mono font-semibold text-text-200\">-</span>");
   });
 
-  it("日均回款大于3元或总回款大于100元时在店铺名旁显示A类标记", () => {
+  it("日均回款大于3元或总回款大于100元时在右侧信息栏显示A类标记", () => {
     const highAverageHtml = renderToStaticMarkup(
       createElement(WorkflowShopCard, {
         ...baseProps,
@@ -176,6 +178,13 @@ describe("WorkflowShopCard", () => {
     expect(highAverageHtml).toContain("A类");
     expect(highAverageHtml).toContain("bg-amber-100");
     expect(highAverageHtml).toContain("text-amber-800");
+    expect(highAverageHtml).toContain("md:max-w-[360px]");
+    expect(highAverageHtml).toContain("xl:max-w-[420px]");
+    expect(highAverageHtml).toContain("truncate");
+    expect(highAverageHtml).toContain("justify-start");
+    expect(highAverageHtml).not.toContain("md:justify-end");
+    expect(highAverageHtml.indexOf("A类")).toBeLessThan(highAverageHtml.indexOf("正常"));
+    expect(highAverageHtml.indexOf("正常")).toBeLessThan(highAverageHtml.indexOf("商家ID:"));
     expect(highTotalHtml).toContain("A类");
     expect(regularHtml).not.toContain("A类");
   });

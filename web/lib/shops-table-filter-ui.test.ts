@@ -13,10 +13,19 @@ describe("店铺数据展示筛选区", () => {
     expect(source).not.toContain('label="销售状态"');
   });
 
-  it("所有筛选框在同一行展示（7 列网格）", () => {
-    // 重构为 Ant Design 后，外层筛选区仍使用 7 列网格在同一行展示
-    expect(source).toContain("grid-cols-7");
+  it("所有筛选框在同一行展示（Ant Design v6 单行工具栏）", () => {
+    expect(source).toContain("flex min-w-max items-end gap-3");
+    expect(source).toContain('variant="filled"');
+    expect(source).not.toContain("grid-cols-7");
     expect(source).not.toContain("xl:grid-cols-5");
+  });
+
+  it("导出和清空按钮使用 Ant Design v6 color/variant 样式", () => {
+    expect(source).toContain('color="primary"');
+    expect(source).toContain('variant="solid"');
+    expect(source).toContain('color="default"');
+    expect(source).toContain('variant="filled"');
+    expect(source).toContain('className="shrink-0 whitespace-nowrap"');
   });
 
   it("日期筛选文案显示为合同签订日期", () => {

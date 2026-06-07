@@ -2,15 +2,9 @@
 
 import { useCallback, useRef, useState } from "react";
 import { BadgeDollarSign, CheckCircle2, Copy, Crown } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button, Table } from "antd";
 import type {
+  PremiumShopListItem,
   PremiumShopPlatformReport,
   PremiumShopReport,
 } from "@/features/premium-shops/types";
@@ -78,8 +72,10 @@ function PremiumShopPlatformTable({
     const isCopied = copiedValueKey === valueKey;
 
     return (
-      <button
-        type="button"
+      <Button
+        htmlType="button"
+        type="text"
+        size="small"
         onClick={() => copyValueText(valueKey, normalizedValue)}
         disabled={normalizedValue === "-"}
         className={`inline-flex max-w-full items-center gap-1 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-bg-200 disabled:cursor-not-allowed disabled:opacity-60 ${
@@ -93,7 +89,7 @@ function PremiumShopPlatformTable({
         ) : (
           <Copy className="h-3.5 w-3.5 shrink-0 opacity-50" />
         )}
-      </button>
+      </Button>
     );
   };
 
@@ -111,97 +107,82 @@ function PremiumShopPlatformTable({
         </div>
       </div>
 
-      <div className="max-h-[680px] overflow-auto">
-        <Table>
-          <TableHeader className="sticky top-0 z-10 bg-bg-200/95 backdrop-blur">
-            <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="w-14 px-4 py-3">序号</TableHead>
-              <TableHead className="min-w-[120px] px-4 py-3">商家ID</TableHead>
-              <TableHead className="min-w-[180px] px-4 py-3">微信群名称</TableHead>
-              <TableHead className="min-w-[180px] px-4 py-3">店铺名</TableHead>
-              <TableHead className="px-4 py-3 text-right">总回款金额</TableHead>
-              <TableHead className="px-4 py-3 text-right">合作总天数</TableHead>
-              <TableHead className="px-4 py-3 text-right">平均日均回款金额</TableHead>
-              <TableHead className="px-4 py-3">截至日期</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 8 }).map((_, index) => (
-                <TableRow key={index} className="border-border">
-                  <TableCell className="px-4 py-3">
-                    <div className="h-4 w-8 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="h-4 w-32 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="h-4 w-36 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="h-4 w-32 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="ml-auto h-4 w-20 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="ml-auto h-4 w-16 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="ml-auto h-4 w-20 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div className="h-4 w-20 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : report.items.length === 0 ? (
-              <TableRow className="border-border">
-                <TableCell colSpan={8} className="h-28 text-center text-sm text-text-200">
-                  暂无在线未解约店铺
-                </TableCell>
-              </TableRow>
-            ) : (
-              report.items.map((item) => (
-                <TableRow key={item.shopId} className="border-border">
-                  <TableCell className="px-4 py-3 font-mono text-xs text-text-200">
-                    {item.rank}
-                  </TableCell>
-                  <TableCell className="max-w-[150px] px-4 py-3 font-mono text-xs">
-                    {renderCopyableValue(
-                      "商家ID",
-                      item.merchantId,
-                      `${item.shopId}:merchantId`
-                    )}
-                  </TableCell>
-                  <TableCell className="max-w-[220px] px-4 py-3 text-xs">
-                    {renderCopyableValue(
-                      "微信群名称",
-                      item.wechatGroupName,
-                      `${item.shopId}:wechatGroupName`
-                    )}
-                  </TableCell>
-                  <TableCell className="max-w-[260px] truncate px-4 py-3 font-medium text-text-100">
-                    {item.shopName}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-right font-mono font-semibold text-green-600 dark:text-green-400">
-                    {formatAmount(item.totalAmount)}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-right font-mono text-xs text-text-200">
-                    {item.cooperationDays}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-right font-mono font-semibold text-text-100">
-                    {formatAmount(item.averageDailyAmount)}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 font-mono text-xs text-text-200">
-                    {item.updatedDateKey || "—"}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <Table<PremiumShopListItem>
+        rowKey="shopId"
+        loading={loading}
+        pagination={false}
+        scroll={{ x: "max-content", y: 620 }}
+        dataSource={report.items}
+        columns={[
+          {
+            title: "序号",
+            dataIndex: "rank",
+            width: 72,
+            fixed: "left",
+            render: (value: number) => (
+              <span className="font-mono text-xs text-text-200">{value}</span>
+            ),
+          },
+          {
+            title: "商家ID",
+            dataIndex: "merchantId",
+            width: 160,
+            render: (value: string, item) =>
+              renderCopyableValue("商家ID", value, `${item.shopId}:merchantId`),
+          },
+          {
+            title: "微信群名称",
+            dataIndex: "wechatGroupName",
+            width: 220,
+            render: (value: string, item) =>
+              renderCopyableValue("微信群名称", value, `${item.shopId}:wechatGroupName`),
+          },
+          {
+            title: "店铺名",
+            dataIndex: "shopName",
+            width: 260,
+            render: (value: string) => (
+              <span className="font-medium text-text-100">{value}</span>
+            ),
+          },
+          {
+            title: "总回款金额",
+            dataIndex: "totalAmount",
+            align: "right",
+            render: (value: number) => (
+              <span className="font-mono font-semibold text-green-600 dark:text-green-400">
+                {formatAmount(value)}
+              </span>
+            ),
+          },
+          {
+            title: "合作总天数",
+            dataIndex: "cooperationDays",
+            align: "right",
+            render: (value: number) => (
+              <span className="font-mono text-xs text-text-200">{value}</span>
+            ),
+          },
+          {
+            title: "平均日均回款金额",
+            dataIndex: "averageDailyAmount",
+            align: "right",
+            render: (value: number) => (
+              <span className="font-mono font-semibold text-text-100">
+                {formatAmount(value)}
+              </span>
+            ),
+          },
+          {
+            title: "截至日期",
+            dataIndex: "updatedDateKey",
+            render: (value: string) => (
+              <span className="font-mono text-xs text-text-200">{value || "—"}</span>
+            ),
+          },
+        ]}
+        locale={{ emptyText: "暂无在线未解约店铺" }}
+      />
     </section>
   );
 }
@@ -246,7 +227,7 @@ export function PremiumShopsReport({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4">
         <PremiumShopPlatformTable report={report.meituan} loading={loading} />
         <PremiumShopPlatformTable report={report.eleme} loading={loading} />
       </div>

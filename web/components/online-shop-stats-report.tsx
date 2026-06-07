@@ -1,20 +1,17 @@
 "use client";
 
 import { Activity, Clock3 } from "lucide-react";
+import { Table } from "antd";
 import { NiceLineChart } from "@/components/charts/line-chart";
 import {
   formatOnlineShopCapturedAt,
   OnlineShopStatsLatestCard,
 } from "@/components/online-shop-stats-latest-card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import type { OnlineShopCountLatestCard, OnlineShopCountReport } from "@/features/online-shop-stats/types";
+import type {
+  OnlineShopCountLatestCard,
+  OnlineShopCountReport,
+  OnlineShopCountTableRow,
+} from "@/features/online-shop-stats/types";
 
 type OnlineShopStatsReportProps = {
   data: OnlineShopCountReport;
@@ -88,64 +85,50 @@ export function OnlineShopStatsReport({
           </p>
         </div>
 
-        <Table>
-          <TableHeader className="bg-bg-200/40">
-            <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="px-6 py-4">日期</TableHead>
-              <TableHead className="px-6 py-4">美团在线店铺数</TableHead>
-              <TableHead className="px-6 py-4">美团采集时间</TableHead>
-              <TableHead className="px-6 py-4">饿了么在线店铺数</TableHead>
-              <TableHead className="px-6 py-4">饿了么采集时间</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 4 }).map((_, index) => (
-                <TableRow key={index} className="border-border">
-                  <TableCell className="px-6 py-4">
-                    <div className="h-4 w-20 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <div className="h-4 w-16 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <div className="h-4 w-20 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <div className="h-4 w-16 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <div className="h-4 w-20 animate-pulse rounded bg-bg-200" />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : data.rows.length === 0 ? (
-              <TableRow className="border-border">
-                <TableCell colSpan={5} className="h-32 text-center text-sm text-text-200">
-                  当前月份暂无在线店铺数数据
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.rows.map((row) => (
-                <TableRow key={row.date} className="border-border">
-                  <TableCell className="px-6 py-4 font-medium text-text-100">{row.date}</TableCell>
-                  <TableCell className="px-6 py-4 text-text-100">
-                    {row.meituanCount ?? "—"}
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-text-200">
-                    {formatOnlineShopCapturedAt(row.meituanCapturedAt)}
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-text-100">
-                    {row.elemeCount ?? "—"}
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-text-200">
-                    {formatOnlineShopCapturedAt(row.elemeCapturedAt)}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <Table<OnlineShopCountTableRow>
+          rowKey="date"
+          loading={loading}
+          pagination={false}
+          dataSource={data.rows}
+          columns={[
+            {
+              title: "日期",
+              dataIndex: "date",
+              render: (value: string) => (
+                <span className="font-medium text-text-100">{value}</span>
+              ),
+            },
+            {
+              title: "美团在线店铺数",
+              dataIndex: "meituanCount",
+              render: (value: number | null) => value ?? "—",
+            },
+            {
+              title: "美团采集时间",
+              dataIndex: "meituanCapturedAt",
+              render: (value: string) => (
+                <span className="text-text-200">
+                  {formatOnlineShopCapturedAt(value)}
+                </span>
+              ),
+            },
+            {
+              title: "饿了么在线店铺数",
+              dataIndex: "elemeCount",
+              render: (value: number | null) => value ?? "—",
+            },
+            {
+              title: "饿了么采集时间",
+              dataIndex: "elemeCapturedAt",
+              render: (value: string) => (
+                <span className="text-text-200">
+                  {formatOnlineShopCapturedAt(value)}
+                </span>
+              ),
+            },
+          ]}
+          locale={{ emptyText: "当前月份暂无在线店铺数数据" }}
+        />
       </div>
     </div>
   );

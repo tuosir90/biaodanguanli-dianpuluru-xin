@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, Input } from "antd";
 import { SpreadsheetDetailsTable } from "@/components/spreadsheet-details-table";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 
@@ -116,8 +116,7 @@ export function SpreadsheetDetailsClient({
         <p className="mt-1 text-sm text-text-200 opacity-80">{subtitle}</p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <Button
-            type="button"
-            variant="outline"
+            htmlType="button"
             className="h-auto rounded-lg px-4 py-2"
             disabled={loading}
             onClick={() => {
@@ -129,7 +128,7 @@ export function SpreadsheetDetailsClient({
           </Button>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <input
+          <Input
             value={keyword}
             onChange={(event) => {
               setLoading(true);

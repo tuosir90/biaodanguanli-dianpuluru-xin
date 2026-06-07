@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dayjs from "dayjs";
+import { DatePicker, Table as AntTable } from "antd";
 import { NiceBarChart } from "@/components/charts/bar-chart";
 import { NiceLineChart } from "@/components/charts/line-chart";
 import { BarChart3, Store, TrendingUp, Users, Calendar, AlertCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 type TrendItem = {
@@ -186,9 +186,6 @@ function StatCard({
           <span>{trend}</span>
         </div>
       )}
-      
-      {/* Decorative gradient background */}
-      <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-accent-200/5 blur-2xl transition-all group-hover:bg-accent-200/10"></div>
     </div>
   );
 }
@@ -257,11 +254,18 @@ export default function StatsPage() {
           <div className="flex items-center justify-center rounded-lg bg-bg-200 px-3 py-2">
             <Calendar className="h-4 w-4 text-text-200" />
           </div>
-          <Input
-            type="month"
-            className="h-9 w-auto border-0 bg-transparent p-0 text-sm font-medium text-text-100 focus-visible:ring-0 hover:bg-transparent"
-            value={month}
-            onChange={(event) => handleMonthChange(event.target.value)}
+          <DatePicker
+            variant="filled"
+            picker="month"
+            format="YYYY-MM"
+            allowClear={false}
+            className="h-9 w-[150px] text-sm font-medium"
+            value={dayjs(`${month}-01`)}
+            onChange={(date) => {
+              if (date) {
+                handleMonthChange(date.format("YYYY-MM"));
+              }
+            }}
           />
         </div>
       </div>
@@ -312,7 +316,6 @@ export default function StatsPage() {
             data={stats.dailyOrderShopTrend}
             xKey="date"
             icon={TrendingUp}
-            className="bg-gradient-to-br from-card to-bg-100/50"
           />
         </div>
         <ChartSection
@@ -338,7 +341,6 @@ export default function StatsPage() {
           data={stats.salesCityShopTrend}
           xKey="name"
           icon={Users}
-          className="bg-gradient-to-br from-card to-bg-100/50"
         />
       </div>
 
@@ -399,54 +401,55 @@ export default function StatsPage() {
           </p>
         </div>
         
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-bg-200/40">
-              <TableRow className="hover:bg-transparent border-border">
-                <TableHead className="w-[200px] px-6 py-4 text-left font-semibold text-text-200">月份</TableHead>
-                <TableHead className="px-6 py-4 text-left font-semibold text-text-200">运营人员</TableHead>
-                <TableHead className="px-6 py-4 text-right font-semibold text-text-200">解约数量</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i} className="border-border">
-                    <TableCell className="px-6 py-4"><div className="h-4 w-16 animate-pulse rounded bg-bg-200"></div></TableCell>
-                    <TableCell className="px-6 py-4"><div className="h-4 w-24 animate-pulse rounded bg-bg-200"></div></TableCell>
-                    <TableCell className="px-6 py-4 text-right"><div className="ml-auto h-4 w-8 animate-pulse rounded bg-bg-200"></div></TableCell>
-                  </TableRow>
-                ))
-              ) : stats.operatorTerminationTrend.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="h-32 text-center">
-                    <div className="flex flex-col items-center justify-center text-text-200 opacity-60">
-                      <AlertCircle className="mb-2 h-8 w-8 opacity-20" />
-                      <p className="text-sm">本月暂无解约数据</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                stats.operatorTerminationTrend.map((item, index) => (
-                  <TableRow key={`${stats.month}-${item.name || index}`} className="border-border hover:bg-bg-100/50 transition-colors">
-                    <TableCell className="px-6 py-4 text-sm font-medium text-text-200">{stats.month}</TableCell>
-                    <TableCell className="px-6 py-4 text-sm text-text-100">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-100/20 text-xs font-bold text-accent-200">
-                          {(item.name || "未").charAt(0)}
-                        </div>
-                        {item.name || "未分配"}
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-6 py-4 text-right text-sm font-bold text-accent-200">
-                      {item.count}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <AntTable
+          rowKey="key"
+          loading={loading}
+          pagination={false}
+          dataSource={stats.operatorTerminationTrend.map((item, index) => ({
+            key: `${stats.month}-${item.name || index}`,
+            month: stats.month,
+            name: item.name || "未分配",
+            count: item.count,
+          }))}
+          columns={[
+            {
+              title: "月份",
+              dataIndex: "month",
+              width: 200,
+              render: (value: string) => (
+                <span className="text-sm font-medium text-text-200">{value}</span>
+              ),
+            },
+            {
+              title: "运营人员",
+              dataIndex: "name",
+              render: (value: string) => (
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-100/40 text-xs font-bold text-accent-200">
+                    {value.charAt(0)}
+                  </div>
+                  <span className="text-sm text-text-100">{value}</span>
+                </div>
+              ),
+            },
+            {
+              title: "解约数量",
+              dataIndex: "count",
+              align: "right",
+              render: (value: number) => (
+                <span className="text-sm font-bold text-accent-200">{value}</span>
+              ),
+            },
+          ]}
+          locale={{
+            emptyText: (
+              <div className="flex h-32 flex-col items-center justify-center text-text-200 opacity-60">
+                <AlertCircle className="mb-2 h-8 w-8 opacity-20" />
+                <p className="text-sm">本月暂无解约数据</p>
+              </div>
+            ),
+          }}
+        />
       </div>
     </section>
   );

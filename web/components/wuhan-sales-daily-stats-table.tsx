@@ -1,15 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Button, Table } from "antd";
 import type { WuhanSalesDailyStatItem } from "@/features/wuhan-sales-stats/types";
 import { WUHAN_SALES_STATS_ALL_VALUE } from "@/features/wuhan-sales-stats/month";
 
@@ -33,57 +25,70 @@ export function WuhanSalesDailyStatsTable({
         <div className="flex items-center gap-3">
           <div className="text-xs text-text-200">共 {dailyStats.length} 天</div>
           {month === WUHAN_SALES_STATS_ALL_VALUE ? null : (
-            <Button type="button" variant="outline" asChild>
-              <Link href={`/daily-point/wuhan-sales-stats/shop-details?month=${encodeURIComponent(month)}`}>
-                店铺明细
-              </Link>
-            </Button>
+            <Link href={`/daily-point/wuhan-sales-stats/shop-details?month=${encodeURIComponent(month)}`}>
+              <Button>店铺明细</Button>
+            </Link>
           )}
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>日期</TableHead>
-            <TableHead className="text-right">每日抽点店铺数</TableHead>
-            <TableHead className="text-right">每日总回款金额</TableHead>
-            <TableHead className="text-right">美团抽点店铺数</TableHead>
-            <TableHead className="text-right">美团总回款金额</TableHead>
-            <TableHead className="text-right">饿了么抽点店铺数</TableHead>
-            <TableHead className="text-right">饿了么总回款金额</TableHead>
-            <TableHead className="text-right">每日开单店铺数</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {dailyStats.map((item) => (
-            <TableRow key={item.date}>
-              <TableCell className="font-mono">{item.date}</TableCell>
-              <TableCell className="text-right font-medium">
-                {item.dailyPointShopCount}
-              </TableCell>
-              <TableCell className="text-right font-medium">
-                {formatCurrency(item.dailyPointAmountTotal)}
-              </TableCell>
-              <TableCell className="text-right font-medium">
-                {item.meituanDailyPointShopCount}
-              </TableCell>
-              <TableCell className="text-right font-medium">
-                {formatCurrency(item.meituanDailyPointAmountTotal)}
-              </TableCell>
-              <TableCell className="text-right font-medium">
-                {item.elemeDailyPointShopCount}
-              </TableCell>
-              <TableCell className="text-right font-medium">
-                {formatCurrency(item.elemeDailyPointAmountTotal)}
-              </TableCell>
-              <TableCell className="text-right font-medium">
-                {item.signedShopCount}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <Table<WuhanSalesDailyStatItem>
+        rowKey="date"
+        dataSource={dailyStats}
+        pagination={false}
+        scroll={{ x: "max-content" }}
+        columns={[
+          {
+            title: "日期",
+            dataIndex: "date",
+            fixed: "left",
+            render: (value: string) => <span className="font-mono">{value}</span>,
+          },
+          {
+            title: "每日抽点店铺数",
+            dataIndex: "dailyPointShopCount",
+            align: "right",
+            render: (value: number) => <span className="font-medium">{value}</span>,
+          },
+          {
+            title: "每日总回款金额",
+            dataIndex: "dailyPointAmountTotal",
+            align: "right",
+            render: (value: number) => <span className="font-medium">{formatCurrency(value)}</span>,
+          },
+          {
+            title: "美团抽点店铺数",
+            dataIndex: "meituanDailyPointShopCount",
+            align: "right",
+            render: (value: number) => <span className="font-medium">{value}</span>,
+          },
+          {
+            title: "美团总回款金额",
+            dataIndex: "meituanDailyPointAmountTotal",
+            align: "right",
+            render: (value: number) => <span className="font-medium">{formatCurrency(value)}</span>,
+          },
+          {
+            title: "饿了么抽点店铺数",
+            dataIndex: "elemeDailyPointShopCount",
+            align: "right",
+            render: (value: number) => <span className="font-medium">{value}</span>,
+          },
+          {
+            title: "饿了么总回款金额",
+            dataIndex: "elemeDailyPointAmountTotal",
+            align: "right",
+            render: (value: number) => <span className="font-medium">{formatCurrency(value)}</span>,
+          },
+          {
+            title: "每日开单店铺数",
+            dataIndex: "signedShopCount",
+            align: "right",
+            render: (value: number) => <span className="font-medium">{value}</span>,
+          },
+        ]}
+        locale={{ emptyText: "当前暂无每日回款明细" }}
+      />
     </div>
   );
 }

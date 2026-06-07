@@ -43,14 +43,14 @@ export function NiceLineChart({
     return Array.from(dateSet).sort((a, b) => a.localeCompare(b));
   }, [series]);
 
-  const textColor = isDark ? "#a1a1aa" : "#71717a";
-  const splitLineColor = isDark ? "#262626" : "#e7e7e4";
-  const tooltipBg = isDark ? "rgba(10, 10, 10, 0.92)" : "rgba(255, 255, 255, 0.95)";
-  const tooltipBorder = isDark ? "#262626" : "#e7e7e4";
-  const tooltipText = isDark ? "#fafafa" : "#18181b";
+  const textColor = isDark ? "#a8bbb6" : "#596b67";
+  const splitLineColor = isDark ? "#22312e" : "#dce7e3";
+  const tooltipBg = isDark ? "rgba(18, 28, 26, 0.94)" : "rgba(255, 255, 255, 0.96)";
+  const tooltipBorder = isDark ? "#22312e" : "#dce7e3";
+  const tooltipText = isDark ? "#edf7f4" : "#17211f";
   const palette = isDark
-    ? ["#fafafa", "#38bdf8", "#4ade80", "#fbbf24", "#f87171", "#22d3ee"]
-    : ["#18181b", "#0ea5e9", "#22c55e", "#f59e0b", "#ef4444", "#06b6d4"];
+    ? ["#5eead4", "#60a5fa", "#4ade80", "#fbbf24", "#f87171", "#c084fc"]
+    : ["#0f766e", "#2563eb", "#16a34a", "#d97706", "#dc2626", "#7c3aed"];
 
   const option = {
     color: palette,

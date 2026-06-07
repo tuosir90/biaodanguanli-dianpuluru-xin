@@ -31,11 +31,6 @@ function currentMonth() {
   );
 }
 
-function normalizeText(value: unknown) {
-  if (value === null || value === undefined) return "";
-  return String(value).trim();
-}
-
 function formatYearMonth(date: Date) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
 }

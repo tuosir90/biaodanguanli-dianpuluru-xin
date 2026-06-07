@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "antd";
 import type {
   SalesInvalidShopSummaryItem,
   SalesInvalidShopsView,
@@ -92,7 +92,7 @@ export function SalesInvalidShopsSummaryGrid({
       </div>
       {summary.length === 0 ? (
         <div className="mt-4">
-          <Button type="button" variant="outline" disabled>
+          <Button htmlType="button" disabled>
             当前月份暂无异常店铺
           </Button>
         </div>

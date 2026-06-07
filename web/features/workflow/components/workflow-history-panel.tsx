@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "antd";
 import type { PatrolHistoryItem } from "../types";
 
 type WorkflowHistoryPanelProps = {
@@ -42,16 +42,16 @@ export function WorkflowHistoryPanel({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            type="button"
-            variant="ghost"
+            htmlType="button"
+            type={historyRange === "today" ? "primary" : "default"}
             className={`h-auto rounded-full border px-3 py-1 text-xs ${historyRange === "today" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-text-200 hover:bg-bg-200"}`}
             onClick={() => onRangeChange("today")}
           >
             今天
           </Button>
           <Button
-            type="button"
-            variant="ghost"
+            htmlType="button"
+            type={historyRange === "7d" ? "primary" : "default"}
             className={`h-auto rounded-full border px-3 py-1 text-xs ${historyRange === "7d" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-text-200 hover:bg-bg-200"}`}
             onClick={() => onRangeChange("7d")}
           >
@@ -59,8 +59,7 @@ export function WorkflowHistoryPanel({
           </Button>
           {historyOperator ? (
             <Button
-              type="button"
-              variant="ghost"
+              htmlType="button"
               className="h-auto rounded-full border border-border bg-card px-3 py-1 text-xs text-text-200 hover:bg-bg-200"
               onClick={onClearOperator}
             >
@@ -115,8 +114,7 @@ export function WorkflowHistoryPanel({
 
       <div className="mt-3 flex items-center justify-end gap-2">
         <Button
-          type="button"
-          variant="ghost"
+          htmlType="button"
           className="h-auto rounded-lg bg-bg-100 px-3 py-1.5 text-xs text-text-200"
           disabled={historyLoading || historyPage <= 1}
           onClick={onPrevPage}
@@ -124,8 +122,7 @@ export function WorkflowHistoryPanel({
           上一页
         </Button>
         <Button
-          type="button"
-          variant="ghost"
+          htmlType="button"
           className="h-auto rounded-lg bg-bg-100 px-3 py-1.5 text-xs text-text-200"
           disabled={historyLoading || historyPage >= historyTotalPages}
           onClick={onNextPage}

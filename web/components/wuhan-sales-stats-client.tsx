@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { SalesInvalidShopsPasswordGate } from "@/components/sales-invalid-shops-password-gate";
 import { WuhanSalesStatsReport } from "@/components/wuhan-sales-stats-report";
@@ -30,25 +30,12 @@ function subscribeSalesInvalidShopsAuth(callback: () => void) {
 export function WuhanSalesStatsClient() {
   const pathname = usePathname();
   const [unlockedInCurrentTab, setUnlockedInCurrentTab] = useState(false);
-  const [reportRenderVersion, setReportRenderVersion] = useState(0);
   const storedAuthed = useSyncExternalStore(
     subscribeSalesInvalidShopsAuth,
     getWuhanSalesAuthStatus,
     () => false
   );
   const isAuthed = storedAuthed || unlockedInCurrentTab;
-
-  useEffect(() => {
-    if (!isAuthed) {
-      return;
-    }
-
-    if (pathname !== "/daily-point/wuhan-sales-stats") {
-      return;
-    }
-
-    setReportRenderVersion((previous) => previous + 1);
-  }, [isAuthed, pathname]);
 
   if (!isAuthed) {
     return (
@@ -63,5 +50,5 @@ export function WuhanSalesStatsClient() {
     );
   }
 
-  return <WuhanSalesStatsReport key={reportRenderVersion} />;
+  return <WuhanSalesStatsReport key={`${pathname}:authed`} />;
 }

@@ -1,24 +1,15 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Row, Col, Typography, Alert, Space } from "antd";
+import { Alert, Button, Card, Col, Input, Row, Select, Space, Typography } from "antd";
 import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   SHOP_OPERATION_MODE_OPTIONS,
   resolveSubmittedOperationMode,
 } from "@/features/shops/operation-modes";
 import { resolveSalesCity } from "@/lib/sales-city";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 type Dropdowns = {
   salesName: string[];
@@ -49,6 +40,14 @@ function today() {
 // 必填项标记
 function RequiredMark() {
   return <span style={{ color: "var(--destructive)" }}> *</span>;
+}
+
+function FieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <Typography.Text strong style={{ display: "block", marginBottom: 8 }}>
+      {children}
+    </Typography.Text>
+  );
 }
 
 export default function NewShopPage() {
@@ -216,16 +215,16 @@ export default function NewShopPage() {
         <form onSubmit={handleSubmit}>
           <Row gutter={[24, 20]}>
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 录入日期 <RequiredMark />
-              </Label>
+              </FieldLabel>
               <Input value={form.entryDate} readOnly required />
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 店铺名 <RequiredMark />
-              </Label>
+              </FieldLabel>
               <Input
                 required
                 placeholder="请输入店铺名称"
@@ -235,9 +234,9 @@ export default function NewShopPage() {
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 商家ID <RequiredMark />
-              </Label>
+              </FieldLabel>
               <Input
                 required
                 placeholder="请输入商家ID"
@@ -249,9 +248,9 @@ export default function NewShopPage() {
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 微信群全名 <RequiredMark />
-              </Label>
+              </FieldLabel>
               <Input
                 required
                 placeholder="请输入微信群全名"
@@ -263,9 +262,9 @@ export default function NewShopPage() {
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 店铺城市 <RequiredMark />
-              </Label>
+              </FieldLabel>
               <Input
                 required
                 placeholder="请输入城市"
@@ -275,21 +274,19 @@ export default function NewShopPage() {
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 开单销售 <RequiredMark />
-              </Label>
-              <Select value={form.salesName} onValueChange={applySalesName}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择销售人员" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dropdowns.salesName.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              </FieldLabel>
+              <Select
+                value={form.salesName || undefined}
+                onChange={applySalesName}
+                placeholder="请选择销售人员"
+                options={dropdowns.salesName.map((item) => ({
+                  value: item,
+                  label: item,
+                }))}
+                style={{ width: "100%", marginTop: 8 }}
+              />
               <Space.Compact style={{ display: "flex", marginTop: 8 }}>
                 <Input
                   placeholder="手动新增开单销售"
@@ -303,36 +300,29 @@ export default function NewShopPage() {
                   }}
                 />
                 <div style={{ width: 140, flexShrink: 0 }}>
-                  <Select value={newSalesCity} onValueChange={setNewSalesCity}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="所属城市" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="武汉">武汉</SelectItem>
-                      <SelectItem value="宜昌">宜昌</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Select
+                    value={newSalesCity || undefined}
+                    onChange={setNewSalesCity}
+                    placeholder="所属城市"
+                    options={[
+                      { value: "武汉", label: "武汉" },
+                      { value: "宜昌", label: "宜昌" },
+                    ]}
+                    style={{ width: "100%" }}
+                  />
                 </div>
                 <Button
-                  type="button"
-                  variant="outline"
+                  htmlType="button"
                   icon={<PlusOutlined />}
                   onClick={handleAddSalesName}
                 >
                   添加
                 </Button>
               </Space.Compact>
-              <input
-                className="sr-only"
-                tabIndex={-1}
-                required
-                value={form.salesName}
-                onChange={() => undefined}
-              />
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>销售所属城市</Label>
+              <FieldLabel>销售所属城市</FieldLabel>
               <Input
                 value={form.salesCity}
                 placeholder="选择开单销售后自动带出"
@@ -341,9 +331,9 @@ export default function NewShopPage() {
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 合同签订日期 <RequiredMark />
-              </Label>
+              </FieldLabel>
               <Input
                 type="date"
                 required
@@ -355,27 +345,22 @@ export default function NewShopPage() {
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 运营模式 <RequiredMark />
-              </Label>
+              </FieldLabel>
               <Select
-                value={form.operationMode}
-                onValueChange={(value) => {
+                value={form.operationMode || undefined}
+                onChange={(value) => {
                   setForm({ ...form, operationMode: value });
                   setManualOperationMode("");
                 }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择运营模式" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SHOP_OPERATION_MODE_OPTIONS.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="请选择运营模式"
+                options={SHOP_OPERATION_MODE_OPTIONS.map((item) => ({
+                  value: item,
+                  label: item,
+                }))}
+                style={{ width: "100%", marginTop: 8 }}
+              />
               <div style={{ marginTop: 8 }}>
                 <Input
                   placeholder="手动填写临时运营模式"
@@ -385,39 +370,24 @@ export default function NewShopPage() {
                   }
                 />
               </div>
-              <input
-                className="sr-only"
-                tabIndex={-1}
-                required
-                value={resolveSubmittedOperationMode(
-                  form.operationMode,
-                  manualOperationMode
-                )}
-                onChange={() => undefined}
-              />
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 负责运营 <RequiredMark />
-              </Label>
+              </FieldLabel>
               <Select
-                value={form.operatorName}
-                onValueChange={(value) =>
+                value={form.operatorName || undefined}
+                onChange={(value) =>
                   setForm({ ...form, operatorName: value })
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择负责运营" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dropdowns.operatorName.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="请选择负责运营"
+                options={dropdowns.operatorName.map((item) => ({
+                  value: item,
+                  label: item,
+                }))}
+                style={{ width: "100%", marginTop: 8 }}
+              />
               <Space.Compact style={{ display: "flex", marginTop: 8 }}>
                 <Input
                   placeholder="手动新增负责运营"
@@ -431,50 +401,30 @@ export default function NewShopPage() {
                   }}
                 />
                 <Button
-                  type="button"
-                  variant="outline"
+                  htmlType="button"
                   icon={<PlusOutlined />}
                   onClick={handleAddOperatorName}
                 >
                   添加
                 </Button>
               </Space.Compact>
-              <input
-                className="sr-only"
-                tabIndex={-1}
-                required
-                value={form.operatorName}
-                onChange={() => undefined}
-              />
             </Col>
 
             <Col xs={24} md={12}>
-              <Label>
+              <FieldLabel>
                 外卖平台 <RequiredMark />
-              </Label>
+              </FieldLabel>
               <Select
-                value={form.deliveryPlatform}
-                onValueChange={(value) =>
+                value={form.deliveryPlatform || undefined}
+                onChange={(value) =>
                   setForm({ ...form, deliveryPlatform: value })
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择外卖平台" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dropdowns.deliveryPlatform.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <input
-                className="sr-only"
-                tabIndex={-1}
-                required
-                value={form.deliveryPlatform}
-                onChange={() => undefined}
+                placeholder="请选择外卖平台"
+                options={dropdowns.deliveryPlatform.map((item) => ({
+                  value: item,
+                  label: item,
+                }))}
+                style={{ width: "100%", marginTop: 8 }}
               />
             </Col>
 
@@ -484,12 +434,13 @@ export default function NewShopPage() {
                   disabled={submitting}
                   loading={submitting}
                   icon={<SaveOutlined />}
-                  type="submit"
+                  type="primary"
+                  htmlType="submit"
                 >
                   {submitting ? "提交中..." : "提交店铺"}
                 </Button>
                 {error ? (
-                  <Alert type="error" showIcon message={error} banner />
+                  <Alert type="error" showIcon title={error} banner />
                 ) : null}
               </Space>
             </Col>

@@ -24,7 +24,9 @@ describe("WorkflowPageContent", () => {
     const html = renderToStaticMarkup(
       createElement(WorkflowPageContent, {
         filters: {
+          initialMonth: "2026-04",
           selectedOperator: "__ALL__",
+          setSelectedOperator: () => undefined,
           detailPage: 1,
           chartOperator: "",
           startDate: "2026-04-01",
@@ -45,6 +47,8 @@ describe("WorkflowPageContent", () => {
           updateStatusKeyword: () => undefined,
           clearKeywords: () => undefined,
           setDetailPage: () => undefined,
+          clearRecentSignedFilter: () => undefined,
+          applyRecentSignedFilter: () => undefined,
           clearDailyActionFilter: () => undefined,
           applyDailyActionFilter: () => undefined,
         },
@@ -77,8 +81,11 @@ describe("WorkflowPageContent", () => {
           },
           dailyActionMonitor: [],
           dailyActionTotalPendingShops: 0,
+          dailyActionLoading: false,
+          dailyActionError: "",
           recentSignedMonitor: [],
           recentSignedTotalShops: 0,
+          allOperators: [],
         },
         detailLoading: false,
         isDailyActionPaginationMode: false,

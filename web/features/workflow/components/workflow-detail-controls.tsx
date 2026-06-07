@@ -1,15 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button, Input, Select } from "antd";
 import { ALL_OPERATORS, DETAIL_PAGE_SIZE } from "../constants";
 
 type WorkflowDetailControlsProps = {
@@ -55,6 +47,8 @@ export function WorkflowDetailControls({
   onPrevPage,
   onNextPage,
 }: WorkflowDetailControlsProps) {
+  const visibleOperators = operators.filter((name) => name !== "王郡江");
+
   return (
     <>
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -73,8 +67,8 @@ export function WorkflowDetailControls({
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <Button
           key={ALL_OPERATORS}
-          type="button"
-          variant="ghost"
+          htmlType="button"
+          type={selectedOperator === ALL_OPERATORS ? "primary" : "default"}
           onClick={() => onSelectOperator(ALL_OPERATORS)}
           className={`h-auto rounded-full border px-4 py-1.5 text-sm font-medium transition-all duration-base ease-apple active-press ${
             selectedOperator === ALL_OPERATORS
@@ -84,11 +78,11 @@ export function WorkflowDetailControls({
         >
           全部
         </Button>
-        {operators.map((name) => (
+        {visibleOperators.map((name) => (
           <Button
             key={name}
-            type="button"
-            variant="ghost"
+            htmlType="button"
+            type={selectedOperator === name ? "primary" : "default"}
             onClick={() => onSelectOperator(name)}
             className={`h-auto rounded-full border px-4 py-1.5 text-sm font-medium transition-all duration-base ease-apple active-press ${
               selectedOperator === name
@@ -102,42 +96,40 @@ export function WorkflowDetailControls({
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-border/50 bg-bg-200/30 p-4 md:grid-cols-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-text-200" />
-          <Input
-            type="text"
-            value={shopNameKeyword}
-            onChange={(event) => onShopNameKeywordChange(event.target.value)}
-            placeholder="输入店铺名搜索"
-            className="w-full rounded-lg border-border bg-card py-2 pl-9 pr-3 text-sm text-text-100 focus-visible:ring-accent-200/20 transition-all duration-fast ease-apple"
-          />
-        </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-text-200" />
-          <Input
-            type="text"
-            value={merchantIdKeyword}
-            onChange={(event) => onMerchantIdKeywordChange(event.target.value)}
-            placeholder="输入商家ID搜索"
-            className="w-full rounded-lg border-border bg-card py-2 pl-9 pr-3 text-sm text-text-100 focus-visible:ring-accent-200/20 transition-all duration-fast ease-apple"
-          />
-        </div>
+        <Input
+          variant="filled"
+          prefix={<Search className="h-4 w-4 text-text-200" />}
+          type="text"
+          value={shopNameKeyword}
+          onChange={(event) => onShopNameKeywordChange(event.target.value)}
+          placeholder="输入店铺名搜索"
+          className="w-full text-sm"
+        />
+        <Input
+          variant="filled"
+          prefix={<Search className="h-4 w-4 text-text-200" />}
+          type="text"
+          value={merchantIdKeyword}
+          onChange={(event) => onMerchantIdKeywordChange(event.target.value)}
+          placeholder="输入商家ID搜索"
+          className="w-full text-sm"
+        />
         <div className="flex gap-2">
-          <Select value={statusKeyword || "ALL"} onValueChange={(val) => onStatusKeywordChange(val === "ALL" ? "" : val)}>
-            <SelectTrigger className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-text-100 focus-visible:ring-accent-200/20 transition-all duration-fast ease-apple">
-              <SelectValue placeholder="全部状态" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">全部状态</SelectItem>
-              <SelectItem value="正常">正常</SelectItem>
-              <SelectItem value="新店">新店</SelectItem>
-              <SelectItem value="已解约">已解约</SelectItem>
-              <SelectItem value="无效店铺">无效店铺</SelectItem>
-            </SelectContent>
-          </Select>
+          <Select
+            value={statusKeyword || "ALL"}
+            onChange={(val) => onStatusKeywordChange(val === "ALL" ? "" : val)}
+            options={[
+              { value: "ALL", label: "全部状态" },
+              { value: "正常", label: "正常" },
+              { value: "新店", label: "新店" },
+              { value: "已解约", label: "已解约" },
+              { value: "无效店铺", label: "无效店铺" },
+            ]}
+            className="flex-1"
+          />
           <Button
-            type="button"
-            variant="ghost"
+            htmlType="button"
+            type="default"
             className="h-auto rounded-lg bg-bg-200 px-3 py-2 text-sm font-medium text-text-200 transition-colors duration-fast ease-apple active-press hover:bg-bg-300"
             onClick={onClearKeywords}
           >
@@ -158,8 +150,8 @@ export function WorkflowDetailControls({
         </div>
         <div className="flex items-center gap-2">
           <Button
-            type="button"
-            variant="ghost"
+            htmlType="button"
+            type="default"
             className="h-auto rounded-lg bg-bg-200 px-3 py-1.5 text-sm font-medium text-text-200 hover:bg-bg-300"
             disabled={
               detailLoading ||
@@ -171,8 +163,8 @@ export function WorkflowDetailControls({
             上一页
           </Button>
           <Button
-            type="button"
-            variant="ghost"
+            htmlType="button"
+            type="default"
             className="h-auto rounded-lg bg-bg-200 px-3 py-1.5 text-sm font-medium text-text-200 hover:bg-bg-300"
             disabled={
               detailLoading ||

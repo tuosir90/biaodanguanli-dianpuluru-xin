@@ -2,8 +2,7 @@
 
 import { memo, useCallback, useRef, useState } from "react";
 import { CheckCircle2, Copy, Link2, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button, Input, Progress, Tag } from "antd";
 import {
   DAILY_PATROL_LABEL,
   progressItems,
@@ -18,7 +17,6 @@ import type { PatrolStatusItem, ShopFlowMetrics, ShopItem } from "../types";
 import {
   patrolWarningClass,
   platformClass,
-  statusBadgeClass,
   statusKey,
   todayDateValue,
 } from "../utils";
@@ -50,6 +48,19 @@ function calculateCooperationDays(contractSignedDate?: string, updatedDateKey?: 
   const diffMs = endDate.getTime() - startDate.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   return Math.max(diffDays, 0) + 1;
+}
+
+function statusTagClass(status: string) {
+  if (status === "已解约") {
+    return "!bg-red-100 !text-red-700 dark:!bg-red-900/30 dark:!text-red-300";
+  }
+  if (status === "无效店铺") {
+    return "!bg-yellow-100 !text-yellow-700 dark:!bg-yellow-900/30 dark:!text-yellow-300";
+  }
+  if (status === "新店") {
+    return "!bg-blue-100 !text-blue-700 dark:!bg-blue-900/30 dark:!text-blue-300";
+  }
+  return "!bg-green-100 !text-green-700 dark:!bg-green-900/30 dark:!text-green-300";
 }
 
 type WorkflowShopCardProps = {
@@ -183,13 +194,17 @@ function WorkflowShopCardBase({
     : dailyPointTotalAmount < 0
       ? "text-red-600 dark:text-red-400"
     : "text-text-200";
+  const flowCompletionPercent = metrics.totalProgressCount > 0
+    ? Math.round((metrics.completedCount / metrics.totalProgressCount) * 100)
+    : 100;
+  const isFlowComplete = metrics.remainingCount <= 0;
 
   const renderCopyableValue = (label: string, valueText: string, valueKey: string, valueClassName?: string) => (
     <span className="flex items-center gap-1">
       <span className="opacity-70 font-medium">{label}:</span>
       <Button
-        type="button"
-        variant="ghost"
+        htmlType="button"
+        type="text"
         onClick={() => copyValueText(valueKey, valueText)}
         disabled={!valueText || valueText === "-"}
         className={`h-auto p-0 hover:bg-transparent ${valueClassName ?? "font-mono"} ${
@@ -204,7 +219,7 @@ function WorkflowShopCardBase({
           {copiedValueKey === valueKey ? (
             <CheckCircle2 className="h-3.5 w-3.5" />
           ) : (
-            <Copy className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-60" />
+            <Copy className="h-3.5 w-3.5 opacity-60" />
           )}
         </span>
       </Button>
@@ -214,40 +229,50 @@ function WorkflowShopCardBase({
   return (
     <article className="group rounded-xl border border-border bg-card p-5 shadow-sm hover-lift">
       <div className="mb-4 flex flex-col justify-between gap-4 border-b border-border pb-4 md:flex-row md:items-center">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 max-w-full items-center gap-3 md:max-w-[360px] md:shrink-0 xl:max-w-[420px]">
           <Button
-            type="button"
-            variant="ghost"
+            htmlType="button"
+            type="text"
             onClick={() => onCopyShopName(shop._id, shop.shopName)}
-            className={`h-auto p-0 text-lg font-bold transition-all hover:bg-transparent ${
+            className={`h-auto min-w-0 max-w-full p-0 text-lg font-bold transition-all hover:bg-transparent ${
               copiedShopId === shop._id
                 ? "scale-105 text-green-600 dark:text-green-400"
                 : "text-text-100 hover:text-accent-200"
             }`}
             title="点击复制店铺名"
           >
-            <span className="flex items-center gap-2">
-              {shop.shopName}
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="min-w-0 truncate">{shop.shopName}</span>
               {copiedShopId === shop._id ? (
-                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
               ) : (
-                <Copy className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-50" />
+                <Copy className="h-4 w-4 shrink-0 opacity-60" />
               )}
             </span>
           </Button>
           {copiedShopId === shop._id ? (
-            <span className="animate-fade-in text-xs text-green-600 dark:text-green-400">已复制</span>
+            <span className="shrink-0 animate-fade-in text-xs text-green-600 dark:text-green-400">已复制</span>
           ) : null}
-          {isAClassShop ? (
-            <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 shadow-sm dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
-              A类
-            </span>
-          ) : null}
-          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass(shopStatus)}`}>
-            {shopStatus}
-          </span>
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-200">
+        <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 text-xs text-text-200">
+          {isAClassShop ? (
+            <>
+              <Tag
+                variant="filled"
+                className="m-0 rounded-full border border-amber-300 !bg-amber-100 px-2 py-0.5 text-[11px] font-semibold !text-amber-800 shadow-sm dark:border-amber-900/50 dark:!bg-amber-900/20 dark:!text-amber-200"
+              >
+                A类
+              </Tag>
+              <span className="hidden h-3 w-px bg-border md:block"></span>
+            </>
+          ) : null}
+          <Tag
+            variant="filled"
+            className={`m-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusTagClass(shopStatus)}`}
+          >
+            {shopStatus}
+          </Tag>
+          <span className="hidden h-3 w-px bg-border md:block"></span>
           {renderCopyableValue("商家ID", shop.merchantId || "-", `${shop._id}:merchantId`, "font-mono")}
           <span className="hidden h-3 w-px bg-border md:block"></span>
           {renderCopyableValue("运营负责人", shop.operatorName || "-", `${shop._id}:operatorName`, "font-medium")}
@@ -328,24 +353,43 @@ function WorkflowShopCardBase({
         </div>
       ) : null}
 
-      <div className="mb-3 flex items-center justify-between rounded-lg border border-border bg-bg-100 px-3 py-2 text-xs">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-text-200">
-            流程完成 <span className="font-semibold text-text-100">{metrics.completedCount}/{metrics.totalProgressCount}</span>
+      <div className="mb-3 rounded-lg border border-border bg-bg-100 px-3 py-2.5 text-xs">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Tag
+              variant="filled"
+              className="m-0 rounded-full !bg-bg-200 px-2.5 py-0.5 font-medium !text-text-100"
+            >
+              流程完成 {metrics.completedCount}/{metrics.totalProgressCount}
+            </Tag>
+            {shop.todayActionLabel ? (
+              <Tag
+                variant="filled"
+                className={`m-0 rounded-full px-2.5 py-0.5 font-medium ${
+                  shop.todayActionType === "flow"
+                    ? "!bg-amber-100 !text-amber-800 dark:!bg-amber-900/30 dark:!text-amber-300"
+                    : "!bg-red-100 !text-red-700 dark:!bg-red-900/30 dark:!text-red-300"
+                }`}
+              >
+                {shop.todayActionLabel}
+              </Tag>
+            ) : null}
+          </div>
+          <span className={`rounded-full px-2.5 py-0.5 font-semibold ${
+            isFlowComplete
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+          }`}>
+            {isFlowComplete ? "已完成" : `还差 ${metrics.remainingCount} 项`}
           </span>
-          {shop.todayActionLabel ? (
-            <span className={`rounded-full px-2 py-0.5 font-medium ${
-              shop.todayActionType === "flow"
-                ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
-                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-            }`}>
-              {shop.todayActionLabel}
-            </span>
-          ) : null}
         </div>
-        <span className={`font-semibold ${metrics.remainingCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
-          还差 {metrics.remainingCount} 项
-        </span>
+        <Progress
+          percent={flowCompletionPercent}
+          showInfo={false}
+          size="small"
+          strokeColor={isFlowComplete ? "#16a34a" : "#f59e0b"}
+          railColor="rgba(148, 163, 184, 0.22)"
+        />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -366,8 +410,8 @@ function WorkflowShopCardBase({
                   className="h-7 w-[140px] rounded border-border bg-card px-2 py-1 text-xs text-text-100"
                 />
                 <Button
-                  type="button"
-                  variant="ghost"
+                  htmlType="button"
+                  type="primary"
                   disabled={!isNormalShop || patrolLoadingMap[shop._id]}
                   onClick={() => onMarkDailyPatrol(shop)}
                   className="h-auto rounded-md bg-accent-200 px-2 py-1 text-xs font-medium text-white hover:bg-accent-200"
@@ -393,11 +437,12 @@ function WorkflowShopCardBase({
           return (
             <Button
               key={item.key}
-              type="button"
-              variant="ghost"
+              htmlType="button"
+              type={done ? "primary" : "default"}
               disabled={isLocked}
               onClick={() => onToggleProgress(shop._id, shop.operatorName || "", item.key, item.label)}
-              className={`h-auto shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-base ease-apple active-press ${
+              style={{ width: 176, justifyContent: "flex-start" }}
+              className={`h-auto w-[176px] shrink-0 justify-start whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-base ease-apple active-press ${
                 isLocked
                   ? "border border-dashed border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-50 hover:text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200"
                   : done

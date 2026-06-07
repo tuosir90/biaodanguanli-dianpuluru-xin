@@ -35,6 +35,12 @@ const patrolShopsStore: CacheStore<unknown> = {
   items: new Map(),
 };
 
+const dailyActionShopItemsStore: CacheStore<unknown> = {
+  ttlMs: 60_000,
+  maxEntries: 100,
+  items: new Map(),
+};
+
 function readCache<T>(store: CacheStore<T>, key: string): T | null {
   const cached = store.items.get(key);
   if (!cached) return null;
@@ -99,10 +105,39 @@ export function setCachedPatrolShops<T>(key: string, payload: T) {
   writeCache(patrolShopsStore as CacheStore<T>, key, payload);
 }
 
-/** toggle 进度项后：只清除 workflowStatus 和 completionMonitor */
+export function buildWorkflowDailyActionShopItemsCacheKey(params?: {
+  operatorName?: string;
+  shopNameKeyword?: string;
+  merchantIdKeyword?: string;
+  statusKeyword?: string;
+  includeDailyPointTotal?: boolean;
+}) {
+  const search = new URLSearchParams();
+  search.set("v", "2");
+  search.set("operatorName", params?.operatorName?.trim() ?? "");
+  search.set("shopName", params?.shopNameKeyword?.trim() ?? "");
+  search.set("merchantId", params?.merchantIdKeyword?.trim() ?? "");
+  search.set("status", params?.statusKeyword?.trim() ?? "");
+  search.set(
+    "includeDailyPointTotal",
+    params?.includeDailyPointTotal === false ? "0" : "1"
+  );
+  return search.toString();
+}
+
+export function getCachedWorkflowDailyActionShopItems<T>(key: string) {
+  return readCache(dailyActionShopItemsStore as CacheStore<T>, key);
+}
+
+export function setCachedWorkflowDailyActionShopItems<T>(key: string, payload: T) {
+  writeCache(dailyActionShopItemsStore as CacheStore<T>, key, payload);
+}
+
+/** toggle 进度项后：清除受流程完成度影响的读取缓存 */
 export function clearWorkflowToggleCaches() {
   workflowStatusStore.items.clear();
   completionMonitorStore.items.clear();
+  dailyActionShopItemsStore.items.clear();
 }
 
 /** 巡店操作影响所有缓存，全量清除 */
@@ -111,4 +146,5 @@ export function clearWorkflowReadCaches() {
   completionMonitorStore.items.clear();
   patrolAlertsStore.items.clear();
   patrolShopsStore.items.clear();
+  dailyActionShopItemsStore.items.clear();
 }

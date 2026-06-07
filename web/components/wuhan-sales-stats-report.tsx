@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BarChart3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button, Input } from "antd";
 import { WuhanSalesDailyStatsTable } from "@/components/wuhan-sales-daily-stats-table";
 import { WuhanSalesTrendCharts } from "@/components/wuhan-sales-trend-charts";
 import {
@@ -104,8 +103,8 @@ export function WuhanSalesStatsReport() {
             className="w-[180px]"
           />
           <Button
-            type="button"
-            variant={showAllDates ? "default" : "outline"}
+            htmlType="button"
+            type={showAllDates ? "primary" : "default"}
             onClick={() => {
               setLoading(true);
               setShowAllDates((previous) => !previous);

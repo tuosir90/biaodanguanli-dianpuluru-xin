@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Store } from "lucide-react";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button, Input } from "antd";
 import { WuhanSalesShopDetailsTable } from "@/components/wuhan-sales-shop-details-table";
 import {
   WUHAN_SALES_STATS_MIN_MONTH,
@@ -92,12 +91,11 @@ export function WuhanSalesShopDetailsReport({
             </div>
           </div>
 
-          <Button type="button" variant="outline" asChild>
-            <Link href={`/daily-point/wuhan-sales-stats?month=${encodeURIComponent(month)}`}>
-              <ArrowLeft className="h-4 w-4" />
+          <Link href={`/daily-point/wuhan-sales-stats?month=${encodeURIComponent(month)}`}>
+            <Button icon={<ArrowLeft className="h-4 w-4" />}>
               返回武汉销售统计
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
 
         <div className="mt-4">

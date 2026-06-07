@@ -29,14 +29,13 @@ export function NiceBarChart({
   
   const isDark = theme === "dark";
 
-  // 中性近黑配色，呼应 Ant Design + shadcn 风格
-  const barColorStart = isDark ? "#fafafa" : "#3f3f46"; // 近白 : zinc-700
-  const barColorEnd = isDark ? "#a1a1aa" : "#18181b";   // zinc-400 : 近黑
-  const textColor = isDark ? "#a1a1aa" : "#71717a";     // zinc-400 : zinc-500
-  const splitLineColor = isDark ? "#262626" : "#e7e7e4"; // 边框中性灰
-  const tooltipBg = isDark ? "rgba(10, 10, 10, 0.92)" : "rgba(255, 255, 255, 0.95)";
-  const tooltipBorder = isDark ? "#262626" : "#e7e7e4";
-  const tooltipText = isDark ? "#fafafa" : "#18181b";
+  const barColorStart = isDark ? "#5eead4" : "#0f766e";
+  const barColorEnd = isDark ? "#60a5fa" : "#2563eb";
+  const textColor = isDark ? "#a8bbb6" : "#596b67";
+  const splitLineColor = isDark ? "#22312e" : "#dce7e3";
+  const tooltipBg = isDark ? "rgba(18, 28, 26, 0.94)" : "rgba(255, 255, 255, 0.96)";
+  const tooltipBorder = isDark ? "#22312e" : "#dce7e3";
+  const tooltipText = isDark ? "#edf7f4" : "#17211f";
 
   const option = {
     grid: {

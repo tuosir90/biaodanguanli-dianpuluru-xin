@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { PremiumShopsReport } from "@/components/premium-shops-report";
 
 describe("PremiumShopsReport", () => {
-  it("分两列展示美团和饿了么优质店铺列表", () => {
+  it("分两行展示美团和饿了么优质店铺列表", () => {
     const html = renderToStaticMarkup(
       createElement(PremiumShopsReport, {
         data: {
@@ -54,6 +54,8 @@ describe("PremiumShopsReport", () => {
     );
 
     expect(html).toContain("优质店铺列表");
+    expect(html).toContain("grid-cols-1");
+    expect(html).not.toContain("xl:grid-cols-2");
     expect(html).toContain("美团");
     expect(html).toContain("饿了么");
     expect(html).toContain("序号");

@@ -292,7 +292,13 @@ export async function fetchWorkflowDailyActionMonitor() {
   const response = await fetch("/api/workflow/daily-action-monitor", {
     cache: "no-store",
   });
-  return (await response.json()) as WorkflowDailyActionMonitorResponse;
+  const result = (await response.json()) as WorkflowDailyActionMonitorResponse & {
+    message?: string;
+  };
+  if (!response.ok) {
+    throw new Error(result.message || "获取今日待处理监控失败");
+  }
+  return result;
 }
 
 export async function fetchWorkflowCompletionMonitorShops(query: string) {

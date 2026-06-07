@@ -57,6 +57,33 @@ describe("toggleWorkflowProgressAction", () => {
     expect(setDetailRefreshToken).toHaveBeenCalledTimes(1);
     expect(setPatrolStatusMap).toHaveBeenCalledTimes(1);
   });
+
+  it("已完成流程再次点击时发送取消完成状态", async () => {
+    vi.mocked(apiModule.toggleWorkflowProgress).mockResolvedValue(undefined);
+    vi.mocked(apiModule.fetchWorkflowPatrolStatus).mockResolvedValue({
+      patrolStatus: [],
+    });
+
+    await toggleWorkflowProgressAction({
+      shopId: "shop-1",
+      operatorName: "王涛",
+      progressKey: "market_plan",
+      progressLabel: "市场调查四套方案",
+      previousCompleted: true,
+      setStatusMap: vi.fn(),
+      setOverviewRefreshToken: vi.fn(),
+      setDetailRefreshToken: vi.fn(),
+      setPatrolStatusMap: vi.fn(),
+    });
+
+    expect(apiModule.toggleWorkflowProgress).toHaveBeenCalledWith(
+      expect.objectContaining({
+        shopId: "shop-1",
+        progressKey: "market_plan",
+        completed: false,
+      })
+    );
+  });
 });
 
 describe("markWorkflowDailyPatrolAction", () => {
@@ -125,8 +152,8 @@ describe("copyWorkflowShopNameAction", () => {
       if (typeof handler === "function") {
         handler();
       }
-      return 0 as ReturnType<typeof setTimeout>;
-    }) as typeof setTimeout);
+      return 0 as unknown as ReturnType<typeof setTimeout>;
+    }) as unknown as typeof setTimeout);
 
     await copyWorkflowShopNameAction({
       shopId: "shop-1",

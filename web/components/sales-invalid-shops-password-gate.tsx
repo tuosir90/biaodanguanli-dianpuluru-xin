@@ -2,9 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { Lock, ShieldAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Alert, Button, Card, Input, Typography } from "antd";
 import {
   SALES_INVALID_SHOPS_LOGIN_PASSWORD,
   setSalesInvalidShopsAuthStatus,
@@ -47,27 +45,31 @@ export function SalesInvalidShopsPasswordGate({
 
   return (
     <section className="mx-auto max-w-xl">
-      <div className="rounded-2xl border border-border bg-card p-8 shadow-soft">
+      <Card variant="outlined" styles={{ body: { padding: 32 } }}>
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-100/15 text-accent-200">
             <Lock className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-text-100 tracking-tight">
+            <Typography.Title level={3} style={{ marginBottom: 4 }}>
               {title}
-            </h2>
-            <p className="mt-1 text-sm text-text-200 opacity-80">
+            </Typography.Title>
+            <Typography.Text type="secondary">
               {description}
-            </p>
+            </Typography.Text>
           </div>
         </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor={passwordInputId}>访问密码</Label>
-            <Input
+            <label
+              htmlFor={passwordInputId}
+              className="block text-sm font-medium text-text-100"
+            >
+              访问密码
+            </label>
+            <Input.Password
               id={passwordInputId}
-              type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="请输入分类页访问密码"
@@ -77,17 +79,19 @@ export function SalesInvalidShopsPasswordGate({
           </div>
 
           {errorMessage ? (
-            <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-              <ShieldAlert className="h-4 w-4 shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
+            <Alert
+              type="error"
+              showIcon
+              icon={<ShieldAlert className="h-4 w-4 shrink-0" />}
+              title={errorMessage}
+            />
           ) : null}
 
-          <Button className="w-full" type="submit">
+          <Button block type="primary" htmlType="submit">
             进入分类页
           </Button>
         </form>
-      </div>
+      </Card>
     </section>
   );
 }

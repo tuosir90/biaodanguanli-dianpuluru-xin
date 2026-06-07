@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Store } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "antd";
 import { OnlineShopStatsReport } from "@/components/online-shop-stats-report";
 import type { OnlineShopCountReport } from "@/features/online-shop-stats/types";
 

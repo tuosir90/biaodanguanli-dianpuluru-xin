@@ -55,6 +55,8 @@ export function WorkflowPageContent({
           recentSignedTotalShops={overviewData.recentSignedTotalShops}
           dailyActionMonitor={overviewData.dailyActionMonitor}
           dailyActionTotalPendingShops={overviewData.dailyActionTotalPendingShops}
+          dailyActionLoading={overviewData.dailyActionLoading}
+          dailyActionError={overviewData.dailyActionError}
           dailyActionFilterOperator={filters.dailyActionFilterOperator}
           onClearDailyActionFilter={filters.clearDailyActionFilter}
           onApplyDailyActionFilter={filters.applyDailyActionFilter}

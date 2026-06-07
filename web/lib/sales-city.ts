@@ -1,4 +1,4 @@
-const WUHAN_SALES_NAMES = new Set(["屈维涛", "李帅", "向文强"]);
+const WUHAN_SALES_NAMES = new Set(["屈维涛", "李帅", "向文强", "韩大武"]);
 
 type SalesCityMapItem = {
   salesName?: string | null;

@@ -5,6 +5,7 @@ import {
   buildWorkflowRecentSignedMonitorShopsQuery,
   buildWorkflowSummaryQuery,
   buildWorkflowStatusQuery,
+  fetchWorkflowDailyActionMonitor,
   toggleWorkflowProgress,
 } from "./api";
 
@@ -156,5 +157,14 @@ describe("workflow api query builders", () => {
         completed: true,
       })
     ).rejects.toThrow("更新失败");
+  });
+
+  it("fetchWorkflowDailyActionMonitor 在接口失败时抛出后端错误信息", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      json: async () => ({ message: "监控加载失败" }),
+    } as Response);
+
+    await expect(fetchWorkflowDailyActionMonitor()).rejects.toThrow("监控加载失败");
   });
 });

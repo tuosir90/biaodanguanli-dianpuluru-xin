@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { Alert, Button, Spin, Tag } from "antd";
 import { groupRecentSignedMonitorRows } from "../recent-signed-monitor-layout";
 import type { PatrolHistoryItem, WorkflowDailyActionMonitorItem } from "../types";
 import { WorkflowHistoryPanel } from "./workflow-history-panel";
@@ -9,6 +9,8 @@ import { WorkflowHistoryPanel } from "./workflow-history-panel";
 type WorkflowDailyActionSectionProps = {
   dailyActionMonitor: WorkflowDailyActionMonitorItem[];
   dailyActionTotalPendingShops: number;
+  dailyActionLoading: boolean;
+  dailyActionError: string;
   dailyActionFilterOperator: string;
   onClearDailyActionFilter: () => void;
   onApplyDailyActionFilter: (operatorName: string) => void;
@@ -33,6 +35,8 @@ type WorkflowDailyActionSectionProps = {
 export function WorkflowDailyActionSection({
   dailyActionMonitor,
   dailyActionTotalPendingShops,
+  dailyActionLoading,
+  dailyActionError,
   dailyActionFilterOperator,
   onClearDailyActionFilter,
   onApplyDailyActionFilter,
@@ -83,14 +87,21 @@ export function WorkflowDailyActionSection({
         <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-text-200">
           当前待处理店铺：{dailyActionTotalPendingShops}
         </span>
+        {dailyActionLoading ? (
+          <Tag
+            variant="filled"
+            className="m-0 rounded-full !bg-bg-100 px-3 py-1 text-xs font-medium !text-text-200"
+          >
+            刷新中
+          </Tag>
+        ) : null}
         {dailyActionFilterOperator ? (
           <>
             <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
               当前筛选：{dailyActionFilterOperator} · 今日待处理店铺
             </span>
             <Button
-              type="button"
-              variant="ghost"
+              htmlType="button"
               className="h-auto rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-text-200 hover:bg-bg-200 hover:text-text-100"
               onClick={onClearDailyActionFilter}
             >
@@ -100,7 +111,22 @@ export function WorkflowDailyActionSection({
         ) : null}
       </div>
 
-      {rows.length === 0 ? (
+      {dailyActionError ? (
+        <Alert
+          type="error"
+          showIcon
+          title="今日待处理店铺监控加载失败"
+          description={dailyActionError}
+          className="mb-4 rounded-xl"
+        />
+      ) : null}
+
+      {dailyActionLoading && rows.length === 0 ? (
+        <div className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-bg-100/50 px-4 py-8 text-sm text-text-200">
+          <Spin size="small" />
+          <span>今日待处理店铺加载中...</span>
+        </div>
+      ) : rows.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-bg-100/50 px-4 py-8 text-center text-sm text-text-200">
           今日所有运营待处理店铺已清零
         </div>
@@ -132,17 +158,24 @@ export function WorkflowDailyActionSection({
                       </div>
 
                       <div className="mb-3 flex flex-wrap gap-2 text-xs">
-                        <span className="rounded-full bg-amber-100/70 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                        <Tag
+                          variant="filled"
+                          className="m-0 rounded-full !bg-amber-100/70 px-3 py-1 text-xs font-medium !text-amber-800 dark:!bg-amber-900/30 dark:!text-amber-300"
+                        >
                           流程推进：{item.flowPendingShopCount}家
-                        </span>
-                        <span className="rounded-full bg-red-100/70 px-3 py-1 font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                        </Tag>
+                        <Tag
+                          variant="filled"
+                          className="m-0 rounded-full !bg-red-100/70 px-3 py-1 text-xs font-medium !text-red-700 dark:!bg-red-900/30 dark:!text-red-300"
+                        >
                           巡店标记：{item.patrolPendingShopCount}家
-                        </span>
+                        </Tag>
                       </div>
 
                       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                        <button
-                          type="button"
+                        <Button
+                          htmlType="button"
+                          type={isActiveOperator ? "primary" : "default"}
                           onClick={() => onApplyDailyActionFilter(item.operatorName)}
                           className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
                             isActiveOperator
@@ -151,19 +184,17 @@ export function WorkflowDailyActionSection({
                           }`}
                         >
                           今日待处理 {item.pendingShopCount} 家
-                        </button>
+                        </Button>
                         <div className="flex flex-wrap items-center gap-2 md:ml-auto md:justify-end">
                           <Button
-                            type="button"
-                            variant="ghost"
+                            htmlType="button"
                             className="h-auto rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-text-200 hover:bg-bg-200 hover:text-text-100"
                             onClick={() => onOpenFlowHistory(normalizedOperatorName)}
                           >
                             {isFlowHistoryOpen ? "收起流程历史" : "查看流程历史"}
                           </Button>
                           <Button
-                            type="button"
-                            variant="ghost"
+                            htmlType="button"
                             className="h-auto rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-text-200 hover:bg-bg-200 hover:text-text-100"
                             onClick={() => onOpenPatrolHistory(normalizedOperatorName)}
                           >

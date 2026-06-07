@@ -118,7 +118,7 @@ export default function LoginPage() {
 
             {errorMessage && (
               <Form.Item>
-                <Alert type="error" showIcon message={errorMessage} />
+                <Alert type="error" showIcon title={errorMessage} />
               </Form.Item>
             )}
 

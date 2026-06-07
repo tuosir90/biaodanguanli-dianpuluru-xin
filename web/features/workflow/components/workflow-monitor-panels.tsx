@@ -20,6 +20,8 @@ type WorkflowMonitorPanelsProps = {
   recentSignedTotalShops: number;
   dailyActionMonitor: WorkflowDailyActionMonitorItem[];
   dailyActionTotalPendingShops: number;
+  dailyActionLoading: boolean;
+  dailyActionError: string;
   dailyActionFilterOperator: string;
   onClearDailyActionFilter: () => void;
   onApplyDailyActionFilter: (operatorName: string) => void;
@@ -30,6 +32,8 @@ export function WorkflowMonitorPanels({
   recentSignedTotalShops,
   dailyActionMonitor,
   dailyActionTotalPendingShops,
+  dailyActionLoading,
+  dailyActionError,
   dailyActionFilterOperator,
   onClearDailyActionFilter,
   onApplyDailyActionFilter,
@@ -165,6 +169,8 @@ export function WorkflowMonitorPanels({
       <WorkflowDailyActionSection
         dailyActionMonitor={dailyActionMonitor}
         dailyActionTotalPendingShops={dailyActionTotalPendingShops}
+        dailyActionLoading={dailyActionLoading}
+        dailyActionError={dailyActionError}
         dailyActionFilterOperator={dailyActionFilterOperator}
         onClearDailyActionFilter={onClearDailyActionFilter}
         onApplyDailyActionFilter={onApplyDailyActionFilter}

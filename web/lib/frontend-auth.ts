@@ -1,4 +1,5 @@
 export const FRONTEND_AUTH_KEY = "frontend_auth";
+export const FRONTEND_AUTH_CHANGE_EVENT = "frontend-auth-change";
 export const FRONTEND_LOGIN_PASSWORD = "csch903";
 export const SALES_INVALID_SHOPS_AUTH_KEY = "sales_invalid_shops_auth";
 export const SALES_INVALID_SHOPS_LOGIN_PASSWORD = "yjkj903";
@@ -22,10 +23,24 @@ function setLocalStorageFlag(key: string, isAuthed: boolean) {
 
   if (isAuthed) {
     window.localStorage.setItem(key, "1");
+    notifyFrontendAuthChange();
     return;
   }
 
   window.localStorage.removeItem(key);
+  notifyFrontendAuthChange();
+}
+
+function notifyFrontendAuthChange() {
+  if (
+    typeof window === "undefined" ||
+    typeof window.dispatchEvent !== "function" ||
+    typeof Event !== "function"
+  ) {
+    return;
+  }
+
+  window.dispatchEvent(new Event(FRONTEND_AUTH_CHANGE_EVENT));
 }
 
 export function getFrontendAuthStatus() {

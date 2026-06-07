@@ -2,18 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
-import { getWorkflowFlowMetrics } from "@/lib/workflow-flow-metrics";
-import { ELEME_FLOW_PROGRESS_ITEMS, FLOW_PROGRESS_ITEMS } from "../constants";
 import { useWorkflowDetailData } from "../hooks/use-workflow-detail-data";
 import { useWorkflowFilters } from "../hooks/use-workflow-filters";
 import { useWorkflowOverviewData } from "../hooks/use-workflow-overview-data";
-import type { ShopFlowMetrics } from "../types";
+import { buildWorkflowShopFlowMetricsMap } from "../workflow-shop-flow-metrics";
 import {
   buildWorkflowListResetKey,
   collectWorkflowOperators,
   hasWorkflowActiveDetailFilters,
 } from "../workflow-page-state";
-import { statusKey } from "../utils";
 import { WorkflowPageContent } from "./workflow-page-content";
 
 const WORKFLOW_POLL_INTERVAL_MS = 2 * 60 * 1000;
@@ -126,22 +123,7 @@ export function WorkflowPageClient() {
   );
 
   const shopFlowMetricsMap = useMemo(() => {
-    const map: Record<string, ShopFlowMetrics> = {};
-    detailData.shops.forEach((shop) => {
-      const flowProgressItems = (shop.deliveryPlatform ?? "").includes("饿了么")
-        ? ELEME_FLOW_PROGRESS_ITEMS
-        : FLOW_PROGRESS_ITEMS;
-      const completedKeys = flowProgressItems
-        .filter((item) => Boolean(detailData.statusMap[statusKey(shop._id, item.key)]))
-        .map((item) => item.key);
-      map[shop._id] = getWorkflowFlowMetrics({
-        deliveryPlatform: shop.deliveryPlatform,
-        shopStatus: shop.shopStatus,
-        completedKeys,
-        lockedProgressKeys: shop.flowLockedProgressKeys,
-      });
-    });
-    return map;
+    return buildWorkflowShopFlowMetricsMap(detailData.shops, detailData.statusMap);
   }, [detailData.shops, detailData.statusMap]);
 
   const detailLoading = detailData.loading || detailData.statusLoading || detailData.patrolStatusLoading;

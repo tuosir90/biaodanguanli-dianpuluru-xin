@@ -6,6 +6,7 @@ describe("resolveSalesCity", () => {
     expect(resolveSalesCity("屈维涛")).toBe("武汉");
     expect(resolveSalesCity("李帅")).toBe("武汉");
     expect(resolveSalesCity("向文强")).toBe("武汉");
+    expect(resolveSalesCity("韩大武")).toBe("武汉");
   });
 
   it("手动指定销售城市时优先使用指定值", () => {
@@ -54,9 +55,11 @@ describe("buildSalesCityMap", () => {
     expect(
       buildSalesCityMap([
         { salesName: "向文强", salesCity: "宜昌" },
+        { salesName: "韩大武", salesCity: "宜昌" },
       ])
     ).toEqual({
       向文强: "武汉",
+      韩大武: "武汉",
     });
   });
 });

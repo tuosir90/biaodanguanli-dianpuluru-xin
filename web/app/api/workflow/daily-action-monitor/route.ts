@@ -7,7 +7,7 @@ import { buildRateLimitHeaders, checkRouteRateLimit } from "@/lib/request-rate-l
 export const maxDuration = 30;
 
 const DAILY_ACTION_MONITOR_RESPONSE_HEADERS = {
-  "Cache-Control": "no-store",
+  "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=120",
 };
 
 export async function GET(request: NextRequest) {
@@ -31,7 +31,9 @@ export async function GET(request: NextRequest) {
     }
 
     await connectMongo();
-    const items = await fetchWorkflowDailyActionShopItems();
+    const items = await fetchWorkflowDailyActionShopItems({
+      includeDailyPointTotal: false,
+    });
     const payload = buildWorkflowDailyActionSummary(
       items.map((item) => ({
         operatorName: item.operatorName || "未分配",

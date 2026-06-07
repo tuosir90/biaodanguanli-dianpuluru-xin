@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "antd";
 import type { PatrolStatusItem, ShopFlowMetrics, ShopItem } from "../types";
 import { WorkflowShopCard } from "./workflow-shop-card";
 
@@ -99,8 +99,7 @@ export function WorkflowShopList({
             已显示 {visibleShops.length} / {filteredShops.length} 家店铺
           </span>
           <Button
-            type="button"
-            variant="ghost"
+            htmlType="button"
             className="h-auto rounded-lg bg-bg-200 px-3 py-1.5 text-xs font-medium text-text-200 hover:bg-bg-300"
             onClick={() => setVisibleCount((prev) => prev + LOAD_MORE_STEP)}
           >

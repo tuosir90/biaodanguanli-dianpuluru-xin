@@ -2,10 +2,12 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { Layout, theme as antdTheme } from "antd";
 import { AppSidebar } from "@/components/app-sidebar";
 import { resolveAppShellView } from "@/lib/app-shell-view";
-import { APP_CONTENT_CLASS } from "@/lib/app-layout-classes";
 import { getFrontendAuthStatus } from "@/lib/frontend-auth";
+
+const { Content } = Layout;
 
 type AppShellProps = {
   children: ReactNode;
@@ -14,6 +16,7 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { token } = antdTheme.useToken();
   const hideSidebar = pathname.startsWith("/login");
   const [hasHydrated, setHasHydrated] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
@@ -46,19 +49,22 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   if (view === "loading") {
-    return <div className="min-h-screen bg-background" />;
+    return <div style={{ minHeight: "100vh", background: token.colorBgLayout }} />;
   }
 
   return (
-    <div className="flex min-h-screen">
+    <Layout style={{ minHeight: "100vh", background: token.colorBgLayout }}>
       <AppSidebar />
-      <div className={APP_CONTENT_CLASS}>
-        <main className="flex-1 p-6 overflow-auto">
+      <Layout style={{ background: token.colorBgLayout }}>
+        <Content
+          className="custom-scrollbar"
+          style={{ padding: 24, overflow: "auto" }}
+        >
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-slow">
             {children}
           </div>
-        </main>
-      </div>
-    </div>
+        </Content>
+      </Layout>
+    </Layout>
   );
 }

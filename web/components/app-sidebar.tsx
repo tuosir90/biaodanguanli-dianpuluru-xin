@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   BarChart3,
@@ -11,9 +10,11 @@ import {
   KanbanSquare,
   Trophy,
 } from "lucide-react";
-import { APP_SIDEBAR_CLASS } from "@/lib/app-layout-classes";
+import { Avatar, Badge, Layout, Menu, theme as antdTheme } from "antd";
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
+
+const { Sider } = Layout;
 
 export const appSidebarMenuItems = [
   { href: "/shops/new", label: "店铺录入", icon: FileEdit },
@@ -32,60 +33,105 @@ export const appSidebarMenuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { token } = antdTheme.useToken();
+
+  const menuItems = appSidebarMenuItems.map(({ href, label, icon: Icon }) => ({
+    key: href,
+    icon: <Icon className="h-4 w-4" />,
+    label,
+  }));
 
   return (
-    <aside className={APP_SIDEBAR_CLASS}>
-      <div className="px-2">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-accent-200 to-accent-100 flex items-center justify-center shadow-lg shadow-accent-200/30">
-              <span className="text-white font-bold text-sm tracking-tight">呈尚</span>
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 border-2 border-card" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-base font-bold text-text-100 tracking-tight leading-tight">呈尚策划</h1>
-            <p className="text-[11px] text-text-200 font-medium">店铺管理系统</p>
-          </div>
-        </div>
-      </div>
-      <nav className="space-y-1.5 flex-1">
-        {appSidebarMenuItems.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href;
-
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-base ease-apple group active-press ${
-                isActive
-                  ? "bg-accent-200 text-white shadow-md shadow-accent-200/20 translate-x-1"
-                  : "text-text-200 hover:bg-bg-200 hover:text-text-100 hover:translate-x-1"
-              }`}
+    <Sider
+      width={256}
+      theme="light"
+      breakpoint="lg"
+      collapsedWidth={0}
+      style={{
+        borderRight: `1px solid ${token.colorBorderSecondary}`,
+        position: "sticky",
+        top: 0,
+        height: "100vh",
+        overflow: "auto",
+      }}
+    >
+      <div className="flex h-full flex-col gap-4 px-3 py-5">
+        {/* 品牌区 */}
+        <div className="flex items-center gap-3 px-2">
+          <Badge dot color={token.colorSuccess} offset={[-4, 36]}>
+            <Avatar
+              shape="square"
+              size={40}
+              style={{
+                backgroundColor: token.colorPrimary,
+                color: token.colorBgContainer,
+                fontWeight: 700,
+                fontSize: 14,
+                borderRadius: 10,
+              }}
             >
-              <Icon className={`h-5 w-5 transition-transform duration-base ease-apple ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
-              <span>{label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-      
-      <div className="px-4 py-4 rounded-xl bg-bg-200/50 border border-border/50">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-accent-100/20 flex items-center justify-center text-accent-200 font-bold text-xs">
-            CS
-          </div>
+              呈尚
+            </Avatar>
+          </Badge>
           <div className="flex flex-col">
-            <span className="text-xs font-semibold text-text-100">当前用户</span>
-            <span className="text-[10px] text-text-200">管理员</span>
+            <span
+              className="text-base font-bold leading-tight"
+              style={{ color: token.colorText }}
+            >
+              呈尚策划
+            </span>
+            <span className="text-[11px]" style={{ color: token.colorTextTertiary }}>
+              店铺管理系统
+            </span>
           </div>
         </div>
-        <div className="mt-3 flex items-center justify-between rounded-lg border border-border/70 bg-background/60 px-2 py-1.5">
-          <span className="text-[11px] font-medium text-text-200">深浅色模式</span>
-          <ThemeToggle />
+
+        {/* 导航菜单 */}
+        <Menu
+          mode="inline"
+          selectedKeys={[pathname]}
+          items={menuItems}
+          onClick={({ key }) => router.push(key)}
+          style={{ flex: 1, border: "none", background: "transparent" }}
+        />
+
+        {/* 底部用户区 */}
+        <div
+          className="rounded-xl px-3 py-3"
+          style={{
+            background: token.colorFillQuaternary,
+            border: `1px solid ${token.colorBorderSecondary}`,
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <Avatar size={32} style={{ backgroundColor: token.colorFillSecondary, color: token.colorText }}>
+              CS
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold" style={{ color: token.colorText }}>
+                当前用户
+              </span>
+              <span className="text-[10px]" style={{ color: token.colorTextTertiary }}>
+                管理员
+              </span>
+            </div>
+          </div>
+          <div
+            className="mt-3 flex items-center justify-between rounded-lg px-2 py-1.5"
+            style={{
+              border: `1px solid ${token.colorBorderSecondary}`,
+              background: token.colorBgContainer,
+            }}
+          >
+            <span className="text-[11px] font-medium" style={{ color: token.colorTextSecondary }}>
+              深浅色模式
+            </span>
+            <ThemeToggle />
+          </div>
+          <LogoutButton />
         </div>
-        <LogoutButton />
       </div>
-    </aside>
+    </Sider>
   );
 }

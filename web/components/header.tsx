@@ -1,23 +1,46 @@
 "use client";
 
+import { Avatar, Layout, theme as antdTheme } from "antd";
 import { ThemeToggle } from "./theme-toggle";
 
+const { Header: AntHeader } = Layout;
+
 export function Header() {
+  const { token } = antdTheme.useToken();
+
   return (
-    <header className="sticky top-0 z-50 w-full glass shadow-soft">
-      <div className="flex h-16 items-center justify-between px-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-200 text-white font-bold text-lg">
-            招
-          </div>
-          <span className="text-xl font-semibold tracking-tight text-text-100">
-            招牌
-          </span>
-        </div>
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-        </div>
+    <AntHeader
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingInline: 24,
+        background: token.colorBgContainer,
+        borderBottom: `1px solid ${token.colorBorderSecondary}`,
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <Avatar
+          shape="square"
+          style={{
+            backgroundColor: token.colorPrimary,
+            color: token.colorBgContainer,
+            fontWeight: 700,
+          }}
+        >
+          招
+        </Avatar>
+        <span className="text-xl font-semibold tracking-tight" style={{ color: token.colorText }}>
+          招牌
+        </span>
       </div>
-    </header>
+      <div className="flex items-center gap-4">
+        <ThemeToggle />
+      </div>
+    </AntHeader>
   );
 }

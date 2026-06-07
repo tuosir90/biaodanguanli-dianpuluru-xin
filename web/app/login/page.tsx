@@ -1,20 +1,20 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, Lock, Store, ChevronRight } from "lucide-react";
+import { LockOutlined, RightOutlined, ShopOutlined } from "@ant-design/icons";
+import { Alert, Button, Form, Input, Typography, theme as antdTheme } from "antd";
 import {
   FRONTEND_LOGIN_PASSWORD,
   getFrontendAuthStatus,
   setFrontendAuthStatus,
 } from "@/lib/frontend-auth";
 
+const { Title, Text, Paragraph } = Typography;
+
 export default function LoginPage() {
   const router = useRouter();
-  const [password, setPassword] = useState("");
+  const { token } = antdTheme.useToken();
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,13 +24,12 @@ export default function LoginPage() {
     }
   }, [router]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function handleSubmit(values: { password: string }) {
     setErrorMessage("");
     setIsSubmitting(true);
 
     try {
-      const normalizedPassword = password.trim();
+      const normalizedPassword = (values.password ?? "").trim();
       if (normalizedPassword !== FRONTEND_LOGIN_PASSWORD) {
         setErrorMessage("密码错误");
         return;
@@ -45,106 +44,101 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background">
-      {/* Left Panel - Branding */}
-      <div className="relative w-full lg:w-1/2 flex flex-col items-center justify-center p-8 lg:p-12 overflow-hidden bg-gradient-to-br from-primary-100 via-primary-200 to-accent-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        {/* Abstract Background Shapes */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20 dark:opacity-10">
-          <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-white blur-3xl mix-blend-overlay animate-pulse" />
-          <div className="absolute top-[40%] -right-[10%] w-[60%] h-[60%] rounded-full bg-accent-200 blur-3xl mix-blend-multiply dark:mix-blend-overlay animate-pulse delay-1000" />
+    <div
+      className="flex min-h-screen w-full flex-col lg:flex-row"
+      style={{ background: token.colorBgContainer }}
+    >
+      {/* 左侧品牌区 */}
+      <div
+        className="relative flex w-full flex-col items-center justify-center overflow-hidden p-8 lg:w-1/2 lg:p-12"
+        style={{ background: token.colorFillTertiary }}
+      >
+        <div className="relative z-10 flex max-w-md flex-col items-center space-y-6 text-center">
+          <div
+            className="flex h-20 w-20 items-center justify-center rounded-2xl"
+            style={{
+              background: token.colorPrimary,
+              color: token.colorBgContainer,
+            }}
+          >
+            <ShopOutlined style={{ fontSize: 36 }} />
+          </div>
+
+          <div className="space-y-2">
+            <Title level={1} style={{ marginBottom: 0 }}>
+              呈尚策划
+            </Title>
+            <Text type="secondary" style={{ fontSize: 20 }}>
+              店铺管理系统（内部）
+            </Text>
+          </div>
+
+          <div
+            className="my-6 h-px w-24"
+            style={{ background: token.colorBorder }}
+          />
+
+          <Text
+            type="secondary"
+            style={{ letterSpacing: 2, textTransform: "uppercase", fontSize: 13 }}
+          >
+            高效管理 · 智慧运营 · 数据驱动
+          </Text>
         </div>
 
-        <div className="relative z-10 flex flex-col items-center text-center space-y-6 max-w-md">
-          <div className="p-4 bg-white/20 dark:bg-white/5 backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 dark:border-white/10">
-            <Store className="w-12 h-12 text-primary-300 dark:text-white" />
-          </div>
-          
-          <div className="space-y-2">
-            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-primary-300 dark:text-white">
-              呈尚策划
-            </h1>
-            <p className="text-xl lg:text-2xl font-medium text-primary-300/80 dark:text-white/80">
-              店铺管理系统（内部）
-            </p>
-          </div>
-          
-          <div className="h-px w-24 bg-primary-300/20 dark:bg-white/20 my-6" />
-          
-          <p className="text-primary-300/70 dark:text-white/60 text-sm lg:text-base font-medium tracking-wide uppercase">
-            高效管理 · 智慧运营 · 数据驱动
-          </p>
-        </div>
-        
-        <div className="absolute bottom-8 text-primary-300/40 dark:text-white/20 text-xs font-medium">
-          © {new Date().getFullYear()} 呈尚策划
+        <div className="absolute bottom-8">
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            © {new Date().getFullYear()} 呈尚策划
+          </Text>
         </div>
       </div>
 
-      {/* Right Panel - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 bg-background">
+      {/* 右侧登录表单 */}
+      <div className="flex w-full items-center justify-center p-6 lg:w-1/2 lg:p-12">
         <div className="w-full max-w-sm space-y-8">
           <div className="space-y-2 text-center lg:text-left">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            <Title level={2} style={{ marginBottom: 4 }}>
               欢迎回来
-            </h2>
-            <p className="text-muted-foreground">
-              请输入您的访问密码以进入呈尚策划内部系统
-            </p>
+            </Title>
+            <Text type="secondary">请输入您的访问密码以进入呈尚策划内部系统</Text>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground font-medium">
-                访问密码
-              </Label>
-              <div className="relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-                  <Lock className="h-4 w-4" />
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="请输入系统密码"
-                  autoComplete="current-password"
-                  required
-                  className="pl-10 h-11 bg-muted/30 border-input focus-visible:ring-primary transition-all duration-200"
-                />
-              </div>
-            </div>
+          <Form layout="vertical" onFinish={handleSubmit} requiredMark={false} size="large">
+            <Form.Item
+              label="访问密码"
+              name="password"
+              rules={[{ required: true, message: "请输入系统密码" }]}
+            >
+              <Input.Password
+                prefix={<LockOutlined style={{ color: token.colorTextTertiary }} />}
+                placeholder="请输入系统密码"
+                autoComplete="current-password"
+              />
+            </Form.Item>
 
             {errorMessage && (
-              <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-sm text-destructive flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
-                {errorMessage}
-              </div>
+              <Form.Item>
+                <Alert type="error" showIcon message={errorMessage} />
+              </Form.Item>
             )}
 
-            <Button 
-              className="w-full h-11 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300 group" 
-              type="submit" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  登录中...
-                </>
-              ) : (
-                <>
-                  立即登录
-                  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </Button>
-          </form>
-          
-          <div className="pt-6 text-center">
-            <p className="text-xs text-muted-foreground">
-              如需重置密码或遇到登录问题，请联系系统管理员
-            </p>
-          </div>
+            <Form.Item style={{ marginBottom: 0 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={isSubmitting}
+                icon={!isSubmitting ? <RightOutlined /> : undefined}
+                iconPlacement="end"
+              >
+                {isSubmitting ? "登录中..." : "立即登录"}
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <Paragraph type="secondary" style={{ fontSize: 12, textAlign: "center", marginBottom: 0 }}>
+            如需重置密码或遇到登录问题，请联系系统管理员
+          </Paragraph>
         </div>
       </div>
     </div>

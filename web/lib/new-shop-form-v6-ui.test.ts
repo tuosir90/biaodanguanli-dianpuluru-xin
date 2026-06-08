@@ -24,5 +24,8 @@ describe("店铺录入表单 v6 组件", () => {
 
   it("商家ID字段展示运营绩效填写提醒", () => {
     expect(source).toContain("计算运营绩效都要使用商家ID，请务必仔细填写！");
+    expect(source).toContain('data-testid="merchant-id-performance-warning"');
+    expect(source).toContain('type="warning"');
+    expect(source).toContain("showIcon");
   });
 });

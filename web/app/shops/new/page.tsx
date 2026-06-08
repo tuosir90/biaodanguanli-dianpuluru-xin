@@ -278,7 +278,19 @@ export default function NewShopPage() {
               <Form.Item<ShopFormValues>
                 name="merchantId"
                 label="商家ID"
-                extra="计算运营绩效都要使用商家ID，请务必仔细填写！"
+                extra={
+                  <Alert
+                    data-testid="merchant-id-performance-warning"
+                    type="warning"
+                    showIcon
+                    message={
+                      <span className="font-semibold text-amber-900">
+                        计算运营绩效都要使用商家ID，请务必仔细填写！
+                      </span>
+                    }
+                    className="mt-2 border-amber-300 bg-amber-50 shadow-sm"
+                  />
+                }
                 rules={requiredInputRule("商家ID")}
               >
                 <Input placeholder="请输入商家ID" />

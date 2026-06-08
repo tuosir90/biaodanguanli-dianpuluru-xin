@@ -2,9 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
+import { Column, Line } from "@ant-design/charts";
 import { DatePicker, Table as AntTable } from "antd";
-import { NiceBarChart } from "@/components/charts/bar-chart";
-import { NiceLineChart } from "@/components/charts/line-chart";
 import { BarChart3, Store, TrendingUp, Users, Calendar, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +21,17 @@ type DailyPointTrendPoint = {
 type DailyPointTrendSeries = {
   name: string;
   values: DailyPointTrendPoint[];
+};
+
+type ColumnChartDatum = {
+  label: string;
+  value: number;
+};
+
+type LineChartDatum = {
+  date: string;
+  seriesName: string;
+  value: number;
 };
 
 type StatsResponse = {
@@ -47,6 +57,40 @@ function formatMonthDayLabel(value: string) {
   return `${matched[2]}-${matched[3]}`;
 }
 
+function formatAmount(value: number) {
+  return new Intl.NumberFormat("zh-CN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatChartValue(value: number, valueType: "count" | "amount") {
+  if (valueType === "amount") return `¥${formatAmount(value)}`;
+  return `${formatAmount(value)} 家`;
+}
+
+function buildLineChartData(series: DailyPointTrendSeries[]) {
+  const dates = Array.from(
+    new Set(
+      series.flatMap((item) =>
+        item.values.map((point) => point.date).filter(Boolean)
+      )
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
+  return series.flatMap<LineChartDatum>((item) => {
+    const valueByDate = new Map(
+      item.values.map((point) => [point.date, Number(point.value ?? 0)])
+    );
+
+    return dates.map((date) => ({
+      date,
+      seriesName: item.name || "未分配",
+      value: Number(valueByDate.get(date) ?? 0),
+    }));
+  });
+}
+
 function currentMonth() {
   const now = new Date();
   const year = now.getFullYear();
@@ -69,7 +113,8 @@ function LineChartSection({
   icon?: React.ElementType;
   className?: string;
 }) {
-  const hasData = data.length > 0 && data.some((series) => series.values.length > 0);
+  const chartData = useMemo(() => buildLineChartData(data), [data]);
+  const hasData = chartData.length > 0;
 
   return (
     <div className={cn("group relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md", className)}>
@@ -85,7 +130,84 @@ function LineChartSection({
 
       {hasData ? (
         <div className="relative z-10">
-          <NiceLineChart series={data} valueType={valueType} height={320} />
+          <Line
+            data={chartData}
+            xField="date"
+            yField="value"
+            colorField="seriesName"
+            height={320}
+            autoFit
+            axis={{
+              x: {
+                title: false,
+                labelAutoRotate: true,
+                labelAutoHide: true,
+                labelFormatter: (value: string) => formatMonthDayLabel(value),
+              },
+              y: {
+                title: false,
+                tickMinStep: valueType === "count" ? 1 : undefined,
+                labelFormatter: (value: number) =>
+                  valueType === "amount"
+                    ? `¥${formatAmount(value)}`
+                    : formatAmount(value),
+              },
+            }}
+            scale={{
+              y: {
+                nice: true,
+                min: 0,
+              },
+              color: {
+                range: [
+                  "#1677ff",
+                  "#13c2c2",
+                  "#52c41a",
+                  "#faad14",
+                  "#f5222d",
+                  "#722ed1",
+                  "#eb2f96",
+                  "#2f54eb",
+                ],
+              },
+            }}
+            legend={{
+              color: {
+                position: "top",
+                layout: {
+                  justifyContent: "center",
+                },
+              },
+            }}
+            tooltip={{
+              title: "date",
+              items: [
+                {
+                  field: "value",
+                  name: valueType === "amount" ? "抽点金额" : "店铺数",
+                  valueFormatter: (value: number) =>
+                    formatChartValue(value, valueType),
+                },
+              ],
+            }}
+            interaction={{
+              tooltip: {
+                shared: true,
+              },
+              legendFilter: true,
+            }}
+            style={{
+              lineWidth: 2.5,
+            }}
+            point={{
+              shapeField: "circle",
+              sizeField: 3,
+              style: {
+                stroke: "#fff",
+                lineWidth: 1,
+              },
+            }}
+          />
         </div>
       ) : (
         <div className="flex h-[320px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-bg-200/30">
@@ -114,7 +236,7 @@ function ChartSection({
   icon?: React.ElementType;
   className?: string;
 }) {
-  const chartData = data.map((item) => ({
+  const chartData: ColumnChartDatum[] = data.map((item) => ({
     label:
       xKey === "date"
         ? formatMonthDayLabel(String(item.date ?? ""))
@@ -138,7 +260,67 @@ function ChartSection({
       
       {hasData ? (
         <div className="relative z-10">
-          <NiceBarChart data={chartData} height={320} />
+          <Column
+            data={chartData}
+            xField="label"
+            yField="value"
+            height={320}
+            autoFit
+            axis={{
+              x: {
+                title: false,
+                labelAutoRotate: true,
+                labelAutoHide: true,
+                labelFormatter: (value: string) => {
+                  const normalized = String(value ?? "").trim();
+                  if (!normalized) return "-";
+                  return normalized.length > 8
+                    ? `${normalized.slice(0, 8)}...`
+                    : normalized;
+                },
+              },
+              y: {
+                title: false,
+                tickMinStep: 1,
+                labelFormatter: (value: number) => formatAmount(value),
+              },
+            }}
+            scale={{
+              y: {
+                nice: true,
+                min: 0,
+              },
+            }}
+            tooltip={{
+              title: "label",
+              items: [
+                {
+                  field: "value",
+                  name: "店铺数",
+                  valueFormatter: (value: number) => `${formatAmount(value)} 家`,
+                },
+              ],
+            }}
+            interaction={{
+              tooltip: {
+                shared: true,
+              },
+            }}
+            style={{
+              fill: "#1677ff",
+              radiusTopLeft: 5,
+              radiusTopRight: 5,
+            }}
+            label={{
+              text: "value",
+              position: "top",
+              style: {
+                fill: "#596b67",
+                fontSize: 11,
+                fontWeight: 600,
+              },
+            }}
+          />
         </div>
       ) : (
         <div className="flex h-[320px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-bg-200/30">

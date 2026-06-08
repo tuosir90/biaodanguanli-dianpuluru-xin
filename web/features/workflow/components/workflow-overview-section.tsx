@@ -16,8 +16,8 @@ import {
   Tag,
   Typography,
 } from "antd";
-import { NiceLineChart } from "@/components/charts/line-chart";
 import type { WorkflowSummary } from "../types";
+import { WorkflowTerminationTrendChart } from "./workflow-termination-trend-chart";
 
 type WorkflowOverviewSectionProps = {
   startDate: string;
@@ -217,13 +217,10 @@ export function WorkflowOverviewSection({
           <div className="mb-4 inline-block rounded-lg bg-bg-200/50 p-2 text-xs text-text-200">
             统计区间：{startDate} ~ {endDate}
           </div>
-          <div className="h-64 w-full">
-            <NiceLineChart
-              series={summary.operatorTerminationTrend}
-              valueType="count"
-              height={256}
-            />
-          </div>
+          <WorkflowTerminationTrendChart
+            series={summary.operatorTerminationTrend}
+            height={280}
+          />
         </div>
       </div>
     </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   Activity,
   BarChart3,
@@ -10,7 +11,7 @@ import {
   KanbanSquare,
   Trophy,
 } from "lucide-react";
-import { Avatar, Badge, Layout, Menu, theme as antdTheme } from "antd";
+import { Avatar, Layout, Menu, theme as antdTheme } from "antd";
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -59,21 +60,14 @@ export function AppSidebar() {
       <div className="flex h-full flex-col gap-4 px-3 py-5">
         {/* 品牌区 */}
         <div className="flex items-center gap-3 px-2">
-          <Badge dot color={token.colorSuccess} offset={[-4, 36]}>
-            <Avatar
-              shape="square"
-              size={40}
-              style={{
-                backgroundColor: token.colorPrimary,
-                color: token.colorBgContainer,
-                fontWeight: 700,
-                fontSize: 14,
-                borderRadius: 10,
-              }}
-            >
-              呈尚
-            </Avatar>
-          </Badge>
+          <Image
+            src="/brand-logo-icon.png"
+            alt="呈尚策划 logo"
+            width={58}
+            height={44}
+            className="h-11 w-[58px] shrink-0 object-contain"
+            priority
+          />
           <div className="flex flex-col">
             <span
               className="text-base font-bold leading-tight"

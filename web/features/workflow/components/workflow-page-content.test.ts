@@ -83,8 +83,6 @@ describe("WorkflowPageContent", () => {
           dailyActionTotalPendingShops: 0,
           dailyActionLoading: false,
           dailyActionError: "",
-          recentSignedMonitor: [],
-          recentSignedTotalShops: 0,
           allOperators: [],
         },
         detailLoading: false,

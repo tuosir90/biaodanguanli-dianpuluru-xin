@@ -3,21 +3,14 @@
 import { useEffect, useState } from "react";
 import {
   buildWorkflowPatrolHistoryQuery,
-  buildWorkflowRecentSignedMonitorShopsQuery,
   fetchWorkflowPatrolHistory,
-  fetchWorkflowRecentSignedMonitorShops,
 } from "../api";
-import { RECENT_SIGNED_WINDOW_DAYS, RECENT_SIGNED_WINDOW_LABEL } from "../constants";
-import type { PatrolHistoryItem, RecentSignedMonitorItem, ShopItem, WorkflowDailyActionMonitorItem } from "../types";
+import type { PatrolHistoryItem, WorkflowDailyActionMonitorItem } from "../types";
 import { WorkflowDailyActionSection } from "./workflow-daily-action-section";
-import { WorkflowRecentSignedSection } from "./workflow-recent-signed-section";
 
 const HISTORY_PAGE_SIZE = 10;
-const RECENT_SIGNED_DETAIL_PAGE_SIZE = 200;
 
 type WorkflowMonitorPanelsProps = {
-  recentSignedMonitor: RecentSignedMonitorItem[];
-  recentSignedTotalShops: number;
   dailyActionMonitor: WorkflowDailyActionMonitorItem[];
   dailyActionTotalPendingShops: number;
   dailyActionLoading: boolean;
@@ -28,8 +21,6 @@ type WorkflowMonitorPanelsProps = {
 };
 
 export function WorkflowMonitorPanels({
-  recentSignedMonitor,
-  recentSignedTotalShops,
   dailyActionMonitor,
   dailyActionTotalPendingShops,
   dailyActionLoading,
@@ -38,11 +29,6 @@ export function WorkflowMonitorPanels({
   onClearDailyActionFilter,
   onApplyDailyActionFilter,
 }: WorkflowMonitorPanelsProps) {
-  const [recentSignedExpandedOperator, setRecentSignedExpandedOperator] = useState("");
-  const [recentSignedDetailItemsMap, setRecentSignedDetailItemsMap] = useState<Record<string, ShopItem[]>>({});
-  const [recentSignedDetailTotalMap, setRecentSignedDetailTotalMap] = useState<Record<string, number>>({});
-  const [recentSignedDetailLoadingOperator, setRecentSignedDetailLoadingOperator] = useState("");
-  const [recentSignedDetailErrorMap, setRecentSignedDetailErrorMap] = useState<Record<string, string>>({});
   const [historyMode, setHistoryMode] = useState<"patrol" | "completion">("patrol");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRange, setHistoryRange] = useState<"today" | "7d">("today");
@@ -113,59 +99,8 @@ export function WorkflowMonitorPanels({
     dailyActionTotalPendingShops,
   ]);
 
-  async function toggleRecentSignedDetails(operatorName: string) {
-    const normalizedOperatorName = (operatorName || "").trim();
-    if (!normalizedOperatorName) {
-      return;
-    }
-
-    if (recentSignedExpandedOperator === normalizedOperatorName) {
-      setRecentSignedExpandedOperator("");
-      return;
-    }
-    setRecentSignedExpandedOperator(normalizedOperatorName);
-    if (recentSignedDetailItemsMap[normalizedOperatorName]) {
-      return;
-    }
-    setRecentSignedDetailLoadingOperator(normalizedOperatorName);
-    setRecentSignedDetailErrorMap((prev) => ({ ...prev, [normalizedOperatorName]: "" }));
-
-    try {
-      const query = buildWorkflowRecentSignedMonitorShopsQuery({
-        page: 1,
-        pageSize: RECENT_SIGNED_DETAIL_PAGE_SIZE,
-        windowDays: RECENT_SIGNED_WINDOW_DAYS,
-        operatorName: normalizedOperatorName,
-      });
-      const result = await fetchWorkflowRecentSignedMonitorShops(query);
-      setRecentSignedDetailItemsMap((prev) => ({ ...prev, [normalizedOperatorName]: result.data ?? [] }));
-      setRecentSignedDetailTotalMap((prev) => ({ ...prev, [normalizedOperatorName]: Number(result.total ?? 0) }));
-    } catch (error) {
-      setRecentSignedDetailErrorMap((prev) => ({
-        ...prev,
-        [normalizedOperatorName]:
-          error instanceof Error
-            ? error.message
-            : `加载${RECENT_SIGNED_WINDOW_LABEL}店铺明细失败`,
-      }));
-    } finally {
-      setRecentSignedDetailLoadingOperator("");
-    }
-  }
-
   return (
     <>
-      <WorkflowRecentSignedSection
-        recentSignedMonitor={recentSignedMonitor}
-        recentSignedTotalShops={recentSignedTotalShops}
-        recentSignedExpandedOperator={recentSignedExpandedOperator}
-        recentSignedDetailItemsMap={recentSignedDetailItemsMap}
-        recentSignedDetailTotalMap={recentSignedDetailTotalMap}
-        recentSignedDetailLoadingOperator={recentSignedDetailLoadingOperator}
-        recentSignedDetailErrorMap={recentSignedDetailErrorMap}
-        onToggleRecentSignedDetails={(operatorName) => void toggleRecentSignedDetails(operatorName)}
-      />
-
       <WorkflowDailyActionSection
         dailyActionMonitor={dailyActionMonitor}
         dailyActionTotalPendingShops={dailyActionTotalPendingShops}

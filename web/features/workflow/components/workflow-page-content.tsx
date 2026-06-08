@@ -51,8 +51,6 @@ export function WorkflowPageContent({
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
         <WorkflowMonitorPanels
-          recentSignedMonitor={overviewData.recentSignedMonitor}
-          recentSignedTotalShops={overviewData.recentSignedTotalShops}
           dailyActionMonitor={overviewData.dailyActionMonitor}
           dailyActionTotalPendingShops={overviewData.dailyActionTotalPendingShops}
           dailyActionLoading={overviewData.dailyActionLoading}

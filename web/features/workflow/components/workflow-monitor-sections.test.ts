@@ -3,33 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { WorkflowDailyActionSection } from "./workflow-daily-action-section";
 import { WorkflowHistoryPanel } from "./workflow-history-panel";
-import { WorkflowRecentSignedSection } from "./workflow-recent-signed-section";
-
-describe("WorkflowRecentSignedSection", () => {
-  it("展示签约10天内运营提醒和查看明细按钮", () => {
-    const html = renderToStaticMarkup(
-      createElement(WorkflowRecentSignedSection, {
-        recentSignedMonitor: [
-          {
-            operatorName: "王清月",
-            recentSignedShopCount: 3,
-          },
-        ],
-        recentSignedTotalShops: 3,
-        recentSignedExpandedOperator: "",
-        recentSignedDetailItemsMap: {},
-        recentSignedDetailTotalMap: {},
-        recentSignedDetailLoadingOperator: "",
-        recentSignedDetailErrorMap: {},
-        onToggleRecentSignedDetails: () => undefined,
-      })
-    );
-
-    expect(html).toContain("签约10天内店铺提醒统计");
-    expect(html).toContain("王清月");
-    expect(html).toContain("查看 3 家提醒店铺");
-  });
-});
+import { WorkflowMonitorPanels } from "./workflow-monitor-panels";
 
 describe("WorkflowDailyActionSection", () => {
   it("在每个运营卡片下展示流程历史和巡店历史按钮，并在对应卡片下方展开历史面板", () => {
@@ -101,6 +75,23 @@ describe("WorkflowDailyActionSection", () => {
     expect(firstOperatorIndex).toBeGreaterThan(-1);
     expect(historyPanelIndex).toBeGreaterThan(firstOperatorIndex);
     expect(secondOperatorIndex).toBeGreaterThan(historyPanelIndex);
+  });
+});
+
+describe("WorkflowMonitorPanels", () => {
+  it("不再渲染签约10天内店铺提醒统计板块", () => {
+    const html = renderToStaticMarkup(
+      createElement(WorkflowMonitorPanels, {
+        dailyActionMonitor: [],
+        dailyActionTotalPendingShops: 0,
+        dailyActionFilterOperator: "",
+        onClearDailyActionFilter: () => undefined,
+        onApplyDailyActionFilter: () => undefined,
+      })
+    );
+
+    expect(html).not.toContain("签约10天内店铺提醒统计");
+    expect(html).toContain("今日待处理店铺监控");
   });
 });
 

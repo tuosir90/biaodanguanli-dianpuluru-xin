@@ -3,11 +3,9 @@ import {
   fetchWorkflowDailyActionMonitor,
   buildWorkflowSummaryQuery,
   fetchWorkflowDropdowns,
-  fetchWorkflowRecentSignedMonitor,
   fetchWorkflowSummary,
 } from "../api";
 import type {
-  RecentSignedMonitorItem,
   WorkflowDailyActionMonitorItem,
   WorkflowSummary,
 } from "../types";
@@ -49,12 +47,9 @@ export function useWorkflowOverviewData({
   const [dailyActionTotalPendingShops, setDailyActionTotalPendingShops] = useState(0);
   const [dailyActionLoading, setDailyActionLoading] = useState(true);
   const [dailyActionError, setDailyActionError] = useState("");
-  const [recentSignedMonitor, setRecentSignedMonitor] = useState<RecentSignedMonitorItem[]>([]);
-  const [recentSignedTotalShops, setRecentSignedTotalShops] = useState(0);
   const [allOperators, setAllOperators] = useState<string[]>([]);
 
   const lastDailyActionFetchRef = useRef(0);
-  const lastRecentSignedFetchRef = useRef(0);
   const OVERVIEW_THROTTLE_MS = 120_000;
 
   useEffect(() => {
@@ -91,26 +86,6 @@ export function useWorkflowOverviewData({
       });
 
     lastDailyActionFetchRef.current = Date.now();
-
-    return () => {
-      active = false;
-    };
-  }, [manualRefreshToken]);
-
-  useEffect(() => {
-    if (manualRefreshToken <= 0) {
-      return;
-    }
-
-    let active = true;
-
-    fetchWorkflowRecentSignedMonitor().then((result) => {
-      if (!active) return;
-      setRecentSignedMonitor(result.operatorStats ?? []);
-      setRecentSignedTotalShops(Number(result.totalRecentSignedShops ?? 0));
-    });
-
-    lastRecentSignedFetchRef.current = Date.now();
 
     return () => {
       active = false;
@@ -161,35 +136,6 @@ export function useWorkflowOverviewData({
   }, [passiveRefreshToken]);
 
   useEffect(() => {
-    const now = Date.now();
-    if (
-      shouldThrottleOverviewRefresh({
-        refreshSource: "passive",
-        lastFetchAt: lastRecentSignedFetchRef.current,
-        now,
-        throttleMs: OVERVIEW_THROTTLE_MS,
-      })
-    ) {
-      return;
-    }
-
-    let active = true;
-
-    fetchWorkflowRecentSignedMonitor().then((result) => {
-      if (!active) return;
-      setRecentSignedMonitor(result.operatorStats ?? []);
-      setRecentSignedTotalShops(Number(result.totalRecentSignedShops ?? 0));
-      if (shouldCommitOverviewRefreshFetch({ active })) {
-        lastRecentSignedFetchRef.current = now;
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [passiveRefreshToken]);
-
-  useEffect(() => {
     const query = buildWorkflowSummaryQuery({
       startDate,
       endDate,
@@ -204,8 +150,6 @@ export function useWorkflowOverviewData({
     dailyActionTotalPendingShops,
     dailyActionLoading,
     dailyActionError,
-    recentSignedMonitor,
-    recentSignedTotalShops,
     allOperators,
   };
 }

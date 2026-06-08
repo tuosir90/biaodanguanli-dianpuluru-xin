@@ -3,6 +3,7 @@ import { connectMongo } from "@/lib/mongodb";
 import { buildRateLimitHeaders, checkRouteRateLimit } from "@/lib/request-rate-limit";
 import { Shop } from "@/models/shop";
 import { WorkflowProgressLog } from "@/models/workflow-progress-log";
+import { buildWorkflowShopCountByOperatorPipeline } from "@/features/workflow/summary-shop-count";
 import { buildWorkflowTerminationTrend } from "@/features/workflow/termination-trend";
 
 export const maxDuration = 30;
@@ -94,17 +95,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const shopCountByOperator = await Shop.aggregate([
-      { $match: { entryDate: { $gte: start, $lt: end } } },
-      {
-        $group: {
-          _id: { $ifNull: ["$operatorName", ""] },
-          shopCount: { $sum: 1 },
-        },
-      },
-      { $project: { _id: 0, operatorName: "$_id", shopCount: 1 } },
-      { $sort: { shopCount: -1, operatorName: 1 } },
-    ]);
+    const shopCountByOperator = await Shop.aggregate(
+      buildWorkflowShopCountByOperatorPipeline(start, end)
+    );
 
     const progressMatch: Record<string, unknown> = {
       progressDate: { $gte: start, $lt: end },

@@ -21,7 +21,7 @@ export const appSidebarMenuItems = [
   { href: "/shops/new", label: "店铺录入", icon: FileEdit },
   { href: "/shops", label: "店铺数据展示", icon: ClipboardList },
   { href: "/stats", label: "数据统计", icon: BarChart3 },
-  { href: "/workflow", label: "运营工作进度", icon: KanbanSquare },
+  { href: "/workflow", label: "运营工作进度", icon: KanbanSquare, disabled: true },
   { href: "/termination/meituan", label: "美团解约明细", icon: FileSpreadsheet },
   { href: "/termination/eleme", label: "饿了么解约明细", icon: FileSpreadsheet },
   { href: "/daily-point/meituan", label: "美团每日抽点明细", icon: FileSpreadsheet },
@@ -37,10 +37,11 @@ export function AppSidebar() {
   const router = useRouter();
   const { token } = antdTheme.useToken();
 
-  const menuItems = appSidebarMenuItems.map(({ href, label, icon: Icon }) => ({
+  const menuItems = appSidebarMenuItems.map(({ href, label, icon: Icon, disabled }) => ({
     key: href,
     icon: <Icon className="h-4 w-4" />,
     label,
+    disabled,
   }));
 
   return (

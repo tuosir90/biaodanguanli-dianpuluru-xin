@@ -14,6 +14,7 @@ import {
   type WorkflowFlowCoCompletionTone,
 } from "../flow-co-completion";
 import { getWorkflowFlowProgressKeys } from "@/lib/workflow-flow-metrics";
+import { classifyShopTier, SHOP_TIER_TAG_CLASS } from "@/lib/shop-tier";
 import type { PatrolStatusItem, ShopFlowMetrics, ShopItem } from "../types";
 import {
   patrolWarningClass,
@@ -186,7 +187,7 @@ function WorkflowShopCardBase({
     cooperationDays && cooperationDays > 0
       ? dailyPointTotalAmount / cooperationDays
       : null;
-  const isAClassShop = dailyPointTotalAmount > 100 || (averageDailyAmount ?? 0) > 3;
+  const shopTier = classifyShopTier(dailyPointTotalAmount, averageDailyAmount ?? 0);
   const dailyPointTotalAmountText = hasDailyPointTotalAmount
     ? `${(Math.round((dailyPointTotalAmount + Number.EPSILON) * 100) / 100).toFixed(2)} 元`
     : "0 元";
@@ -256,17 +257,13 @@ function WorkflowShopCardBase({
           ) : null}
         </div>
         <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 text-xs text-text-200">
-          {isAClassShop ? (
-            <>
-              <Tag
-                variant="filled"
-                className="m-0 rounded-full border border-amber-300 !bg-amber-100 px-2 py-0.5 text-[11px] font-semibold !text-amber-800 shadow-sm dark:border-amber-900/50 dark:!bg-amber-900/20 dark:!text-amber-200"
-              >
-                A类
-              </Tag>
-              <span className="hidden h-3 w-px bg-border md:block"></span>
-            </>
-          ) : null}
+          <Tag
+            variant="filled"
+            className={`m-0 rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm ${SHOP_TIER_TAG_CLASS[shopTier]}`}
+          >
+            {shopTier}
+          </Tag>
+          <span className="hidden h-3 w-px bg-border md:block"></span>
           <Tag
             variant="filled"
             className={`m-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusTagClass(shopStatus)}`}

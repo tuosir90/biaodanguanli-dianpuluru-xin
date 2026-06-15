@@ -119,7 +119,7 @@ describe("WorkflowShopCard", () => {
     expect(html).not.toContain("累计回款:</span><span class=\"font-mono font-semibold text-text-200\">-</span>");
   });
 
-  it("日均回款大于3元或总回款大于100元时在右侧信息栏显示A类标记", () => {
+  it("每个店铺在右侧信息栏显示对应档位标记(A3/A2/A1/B/C)", () => {
     const highAverageHtml = renderToStaticMarkup(
       createElement(WorkflowShopCard, {
         ...baseProps,
@@ -175,18 +175,22 @@ describe("WorkflowShopCard", () => {
       })
     );
 
-    expect(highAverageHtml).toContain("A类");
-    expect(highAverageHtml).toContain("bg-amber-100");
-    expect(highAverageHtml).toContain("text-amber-800");
+    // 日均 20/5=4 → A1；总额 100.01 日均≈5.0005 → A2；普通 15/10=1.5 → B
+    expect(highAverageHtml).toContain("A1");
+    expect(highAverageHtml).toContain("bg-lime-100");
     expect(highAverageHtml).toContain("md:max-w-[360px]");
     expect(highAverageHtml).toContain("xl:max-w-[420px]");
     expect(highAverageHtml).toContain("truncate");
     expect(highAverageHtml).toContain("justify-start");
     expect(highAverageHtml).not.toContain("md:justify-end");
-    expect(highAverageHtml.indexOf("A类")).toBeLessThan(highAverageHtml.indexOf("正常"));
+    expect(highAverageHtml.indexOf("A1")).toBeLessThan(highAverageHtml.indexOf("正常"));
     expect(highAverageHtml.indexOf("正常")).toBeLessThan(highAverageHtml.indexOf("商家ID:"));
-    expect(highTotalHtml).toContain("A类");
+    expect(highTotalHtml).toContain("A2");
+    expect(highTotalHtml).toContain("bg-emerald-100");
+    expect(regularHtml).toContain("bg-amber-100");
     expect(regularHtml).not.toContain("A类");
+    expect(regularHtml).not.toContain("A1");
+    expect(regularHtml).not.toContain("A2");
   });
 
   it("低回款锁定全店图时显示提示并禁用5个菜品图标签", () => {

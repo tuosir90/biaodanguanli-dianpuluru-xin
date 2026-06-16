@@ -31,7 +31,7 @@ describe("buildWorkflowFlowLockLookup", () => {
         { platform: "meituan", storeId: "m1", recordDateKey: "2026-04-03", amountValue: 0.3 },
         { platform: "meituan", storeId: "m1", recordDateKey: "2026-04-04", amountValue: 0.3 },
         { platform: "meituan", storeId: "m1", recordDateKey: "2026-04-05", amountValue: 0.7 },
-        { platform: "meituan", storeId: "m1", recordDateKey: "2026-04-10", amountValue: 99 },
+        { platform: "meituan", storeId: "other", recordDateKey: "2026-04-10", amountValue: 99 },
       ],
     });
 
@@ -49,6 +49,45 @@ describe("buildWorkflowFlowLockLookup", () => {
         ],
       })
     );
+  });
+
+  it("前5天低于2元但后续累计回款达到2元时自动解除菜品图锁定", () => {
+    const lookup = buildWorkflowFlowLockLookup({
+      shops: [
+        {
+          _id: "shop-recovered",
+          merchantId: "33290531",
+          shopName: "田记卤味猪脚饭",
+          deliveryPlatform: "美团餐饮",
+          contractSignedDate: "2026-05-29T00:00:00+08:00",
+        },
+      ],
+      availableDateKeysByPlatform: {
+        meituan: [
+          "2026-06-15",
+          "2026-06-14",
+          "2026-06-13",
+          "2026-06-12",
+          "2026-06-11",
+          "2026-06-10",
+          "2026-06-03",
+          "2026-06-02",
+          "2026-06-01",
+          "2026-05-31",
+          "2026-05-30",
+        ],
+      },
+      dailyDetails: [
+        { platform: "meituan", storeId: "33290531", recordDateKey: "2026-06-10", amountValue: 10.61 },
+        { platform: "meituan", storeId: "33290531", recordDateKey: "2026-06-11", amountValue: 12.82 },
+        { platform: "meituan", storeId: "33290531", recordDateKey: "2026-06-12", amountValue: 21.19 },
+        { platform: "meituan", storeId: "33290531", recordDateKey: "2026-06-13", amountValue: 22.34 },
+        { platform: "meituan", storeId: "33290531", recordDateKey: "2026-06-14", amountValue: 28.61 },
+        { platform: "meituan", storeId: "33290531", recordDateKey: "2026-06-15", amountValue: 22.59 },
+      ],
+    });
+
+    expect(lookup["shop-recovered"]).toBeUndefined();
   });
 
   it("按签约次日起连续5天总回款达到2元时不锁定全店图流程", () => {

@@ -195,22 +195,37 @@ export function buildWorkflowFlowLockLookup(params: {
         : shopName
           ? amountLookup.rowsByShopName.get(shopName) ?? []
           : [];
-    const totalAmount = roundToTwo(
+    const windowTotalAmount = roundToTwo(
       matchedRows
         .filter((row) => windowDateSet.has(normalizeText(row.recordDateKey)))
         .reduce((sum, row) => sum + toFiniteNumber(row.amountValue), 0)
     );
+    const windowStartDateKey = windowInfo.windowDateKeys[0] ?? "";
+    const cumulativeAmount = roundToTwo(
+      matchedRows
+        .filter((row) => {
+          const recordDateKey = normalizeText(row.recordDateKey);
+          return (
+            recordDateKey >= windowStartDateKey &&
+            recordDateKey <= windowInfo.latestDateKey
+          );
+        })
+        .reduce((sum, row) => sum + toFiniteNumber(row.amountValue), 0)
+    );
 
-    if (totalAmount >= LOW_REVENUE_LOCK_THRESHOLD_AMOUNT) {
+    if (
+      windowTotalAmount >= LOW_REVENUE_LOCK_THRESHOLD_AMOUNT ||
+      cumulativeAmount >= LOW_REVENUE_LOCK_THRESHOLD_AMOUNT
+    ) {
       return lookup;
     }
 
     lookup[String(shop._id)] = {
       lockedProgressKeys: [...LOW_REVENUE_FULL_IMAGE_LOCK_PROGRESS_KEYS],
-      reasonText: `签约次日起连续${LOW_REVENUE_LOCK_WINDOW_DAYS}天总回款 ${totalAmount.toFixed(
+      reasonText: `签约次日起连续${LOW_REVENUE_LOCK_WINDOW_DAYS}天总回款 ${windowTotalAmount.toFixed(
         2
       )} 元，低于 ${LOW_REVENUE_LOCK_THRESHOLD_AMOUNT} 元，已锁定全店图`,
-      totalAmount,
+      totalAmount: windowTotalAmount,
       latestDateKey: windowInfo.latestDateKey,
       windowDateKeys: [...windowInfo.windowDateKeys],
     };
@@ -229,12 +244,12 @@ export async function fetchWorkflowFlowLockLookup(
     meituan: {
       merchantIds: new Set<string>(),
       shopNames: new Set<string>(),
-      windowDateKeys: new Set<string>(),
+      dateRanges: [] as Array<{ startDateKey: string; endDateKey: string }>,
     },
     eleme: {
       merchantIds: new Set<string>(),
       shopNames: new Set<string>(),
-      windowDateKeys: new Set<string>(),
+      dateRanges: [] as Array<{ startDateKey: string; endDateKey: string }>,
     },
   };
 
@@ -273,15 +288,21 @@ export async function fetchWorkflowFlowLockLookup(
       return;
     }
 
-    windowInfo.windowDateKeys.forEach((dateKey) => {
-      platformGroups[platform].windowDateKeys.add(dateKey);
-    });
+    const startDateKey = windowInfo.windowDateKeys[0];
+    if (startDateKey) {
+      platformGroups[platform].dateRanges.push({
+        startDateKey,
+        endDateKey: windowInfo.latestDateKey,
+      });
+    }
   });
 
   const rowFilters: Record<string, unknown>[] = [];
   (["meituan", "eleme"] as const).forEach((platform) => {
-    const windowDateKeys = Array.from(platformGroups[platform].windowDateKeys);
-    if (windowDateKeys.length === 0) return;
+    const dateRangeFilters = platformGroups[platform].dateRanges.map((range) => ({
+      recordDateKey: { $gte: range.startDateKey, $lte: range.endDateKey },
+    }));
+    if (dateRangeFilters.length === 0) return;
 
     const merchantIds = Array.from(platformGroups[platform].merchantIds);
     const shopNames = Array.from(platformGroups[platform].shopNames);
@@ -297,8 +318,7 @@ export async function fetchWorkflowFlowLockLookup(
 
     rowFilters.push({
       platform,
-      recordDateKey: { $in: windowDateKeys },
-      $or: identityFilter,
+      $and: [{ $or: identityFilter }, { $or: dateRangeFilters }],
     });
   });
 

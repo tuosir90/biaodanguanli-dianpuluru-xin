@@ -59,9 +59,7 @@ export async function GET(request: NextRequest) {
 
     await connectMongo();
     const shops = await Shop.find({
-      shopStatus: "已解约",
-      terminationDate: { $gte: range.terminationStart, $lt: range.terminationEnd },
-      contractSignedDate: { $gte: range.signedStart, $lt: range.signedEnd },
+      contractSignedDate: { $gte: range.threeMonthSignedStart, $lt: range.threeMonthSignedEnd },
     })
       .select({
         _id: 1,

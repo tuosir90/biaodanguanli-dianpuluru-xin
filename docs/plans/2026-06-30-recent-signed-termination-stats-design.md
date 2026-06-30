@@ -162,7 +162,9 @@ contractSignedDate 有值
 
 - 当前统计月份
 - 签约月份范围，例如 `2026-05 ~ 2026-06`
+- 三个月店铺总数范围，例如统计 `2026-06` 时为 `2026-04 ~ 2026-06`
 - 新签解约总数
+- 三个月店铺总数
 - 涉及运营人数
 
 ### 7.3 运营统计表
@@ -175,12 +177,14 @@ contractSignedDate 有值
 | 签约月份范围 | 上月 + 本月 |
 | 运营人员 | `operatorName`，为空时显示 `未分配` |
 | 解约数量 | 满足本口径的店铺数 |
+| 三个月店铺总数 | 统计月本月及往前两个月签约的店铺总数 |
 
 默认排序：
 
 ```text
 解约数量从高到低；
-数量相同按运营姓名升序。
+数量相同按三个月店铺总数从高到低；
+仍相同按运营姓名升序。
 ```
 
 ### 7.4 店铺明细表
@@ -256,11 +260,19 @@ type RecentSignedTerminationStatsResponse = {
     startDate: string;
     endDate: string;
   };
+  threeMonthSignedRange: {
+    startMonth: string;
+    endMonth: string;
+    startDate: string;
+    endDate: string;
+  };
   totalTerminatedCount: number;
+  threeMonthSignedShopCount: number;
   operatorCount: number;
   operatorStats: Array<{
     operatorName: string;
     count: number;
+    threeMonthSignedShopCount: number;
   }>;
   shops: Array<{
     id: string;
@@ -285,19 +297,24 @@ terminationEnd   = 下个月 1 日 00:00:00
 
 signedStart = 上个月 1 日 00:00:00
 signedEnd   = 下个月 1 日 00:00:00
+
+threeMonthSignedStart = 统计月往前第 2 个月 1 日 00:00:00
+threeMonthSignedEnd   = 下个月 1 日 00:00:00
 ```
 
-Mongo 查询条件：
+Mongo 查询条件建议先按三个月签约范围拉取候选店铺：
 
 ```ts
 {
-  shopStatus: "已解约",
-  terminationDate: { $gte: terminationStart, $lt: terminationEnd },
-  contractSignedDate: { $gte: signedStart, $lt: signedEnd },
+  contractSignedDate: { $gte: threeMonthSignedStart, $lt: threeMonthSignedEnd },
 }
 ```
 
-然后按 `operatorName` 聚合统计。
+然后在业务层分别计算：
+
+- 新签解约数量：`contractSignedDate` 在上月 + 本月，且 `terminationDate` 在统计月，且 `shopStatus = 已解约`
+- 三个月店铺总数：`contractSignedDate` 在统计月本月及往前两个月
+- 最后按 `operatorName` 聚合统计。
 
 ## 11. 验收标准
 
@@ -306,6 +323,7 @@ Mongo 查询条件：
 - 用户切换到 `2026-06` 时，只统计 `2026-05` 和 `2026-06` 签约、且 `2026-06` 解约的店铺。
 - 用户切换到 `2026-07` 时，只统计 `2026-06` 和 `2026-07` 签约、且 `2026-07` 解约的店铺。
 - 页面按运营展示解约数量。
+- 页面按运营展示统计月本月及往前两个月签约的店铺总数。
 - 运营统计数量可以通过下方店铺明细逐条核对。
 - 不把更早月份签约但在统计月份解约的店铺计入新页面。
 - 现有 `数据统计` 页面里的全量运营解约统计不受影响。

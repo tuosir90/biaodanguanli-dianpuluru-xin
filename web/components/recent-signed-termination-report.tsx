@@ -42,7 +42,14 @@ function emptyReport(month: string): RecentSignedTerminationReport {
       startDate: formatDate(previous),
       endDate: formatDate(end),
     },
+    threeMonthSignedRange: {
+      startMonth: formatMonth(new Date(Date.UTC(year, monthIndex - 2, 1))),
+      endMonth: formatMonth(current),
+      startDate: formatDate(new Date(Date.UTC(year, monthIndex - 2, 1))),
+      endDate: formatDate(end),
+    },
     totalTerminatedCount: 0,
+    threeMonthSignedShopCount: 0,
     operatorCount: 0,
     operatorStats: [],
     shops: [],
@@ -188,7 +195,9 @@ export function RecentSignedTerminationReportView() {
               </p>
               <div className="mt-2 text-xs text-text-200">
                 统计月份：{data.month} ｜ 签约范围：{data.signedMonthRange.startMonth} ~{" "}
-                {data.signedMonthRange.endMonth} ｜ 解约范围：{data.month}
+                {data.signedMonthRange.endMonth} ｜ 三个月总数范围：
+                {data.threeMonthSignedRange.startMonth} ~ {data.threeMonthSignedRange.endMonth} ｜
+                解约范围：{data.month}
               </div>
             </div>
           </div>
@@ -222,7 +231,7 @@ export function RecentSignedTerminationReportView() {
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         <StatCard
           title="新签解约总数"
           value={`${data.totalTerminatedCount} 家`}
@@ -238,6 +247,13 @@ export function RecentSignedTerminationReportView() {
           tone="info"
         />
         <StatCard
+          title="三个月店铺总数"
+          value={`${data.threeMonthSignedShopCount} 家`}
+          description={`${data.threeMonthSignedRange.startMonth} ~ ${data.threeMonthSignedRange.endMonth} 签约`}
+          icon={Store}
+          tone="info"
+        />
+        <StatCard
           title="签约月份范围"
           value={`${data.signedMonthRange.startMonth} ~ ${data.signedMonthRange.endMonth}`}
           description={`${data.signedMonthRange.startDate} 至 ${data.signedMonthRange.endDate}`}
@@ -247,7 +263,7 @@ export function RecentSignedTerminationReportView() {
           title="当前明细"
           value={`${filteredShops.length} 家`}
           description="受运营、平台、关键词筛选影响"
-          icon={Store}
+          icon={Search}
         />
       </div>
 
@@ -273,7 +289,9 @@ export function RecentSignedTerminationReportView() {
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           <div className="border-b border-border bg-bg-100/60 px-5 py-4">
             <h2 className="text-base font-semibold text-text-100">运营汇总</h2>
-            <p className="mt-1 text-xs text-text-200">按解约数量从高到低排序</p>
+            <p className="mt-1 text-xs text-text-200">
+              按解约数量从高到低排序，同时展示三个月签约店铺总数
+            </p>
           </div>
           <Table
             rowKey="operatorName"
@@ -310,6 +328,14 @@ export function RecentSignedTerminationReportView() {
                   <span className="font-mono font-semibold text-red-600 dark:text-red-300">
                     {value}
                   </span>
+                ),
+              },
+              {
+                title: "三个月总数",
+                dataIndex: "threeMonthSignedShopCount",
+                align: "right",
+                render: (value: number) => (
+                  <span className="font-mono font-semibold text-text-100">{value}</span>
                 ),
               },
             ]}

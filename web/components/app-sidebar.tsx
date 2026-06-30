@@ -24,6 +24,7 @@ export const appSidebarMenuItems = [
   { href: "/workflow", label: "运营工作进度", icon: KanbanSquare, disabled: true },
   { href: "/termination/meituan", label: "美团解约明细", icon: FileSpreadsheet },
   { href: "/termination/eleme", label: "饿了么解约明细", icon: FileSpreadsheet },
+  { href: "/termination/recent-signed-stats", label: "新签解约统计", icon: FileSpreadsheet },
   { href: "/daily-point/meituan", label: "美团每日抽点明细", icon: FileSpreadsheet },
   { href: "/daily-point/eleme", label: "饿了么每日抽点明细", icon: FileSpreadsheet },
   { href: "/daily-point/sales-invalid-shops", label: "销售无效店铺统计", icon: FileSpreadsheet },

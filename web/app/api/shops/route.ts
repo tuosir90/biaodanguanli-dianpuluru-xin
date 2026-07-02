@@ -5,6 +5,7 @@ import {
   isWithinNewShopCycle,
   parsePositiveInt,
 } from "@/lib/shop-query";
+import { formatShanghaiDateKey, parseShanghaiDateInputToDate } from "@/lib/shanghai-date";
 import {
   applyDailyPointTotalAmountToShops,
   fetchDailyPointTotalAmountLookup,
@@ -44,21 +45,6 @@ type ShopUpdatePayload = {
   operationMode?: string;
 };
 
-function dayStart(dateInput: Date) {
-  const date = new Date(dateInput);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function formatShanghaiDate(date: Date) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
-}
-
 export async function GET(request: NextRequest) {
   try {
     await connectMongo();
@@ -88,7 +74,7 @@ export async function GET(request: NextRequest) {
       Shop.countDocuments(filter),
     ]);
 
-    const todayDateKey = formatShanghaiDate(new Date());
+    const todayDateKey = formatShanghaiDateKey(new Date());
     const normalizedData = data.map((item) => {
       const normalizedSalesCity = resolveSalesCity(
         String(item.salesName ?? ""),
@@ -133,24 +119,32 @@ export async function POST(request: NextRequest) {
 
     const payload = (await request.json()) as ShopPayload;
     const shopName = payload.shopName?.trim();
-    const contractSignedDateInput = new Date(payload.contractSignedDate);
+    const contractSignedDateInput = parseShanghaiDateInputToDate(payload.contractSignedDate);
 
     if (!shopName) {
       return NextResponse.json({ message: "店铺名不能为空" }, { status: 400 });
     }
 
-    if (Number.isNaN(contractSignedDateInput.getTime())) {
+    if (!contractSignedDateInput) {
       return NextResponse.json(
         { message: "合同签订日期格式不正确" },
         { status: 400 }
       );
     }
 
+    const todayEntryDate = parseShanghaiDateInputToDate(formatShanghaiDateKey(new Date()));
+    if (!todayEntryDate) {
+      return NextResponse.json(
+        { message: "当前日期解析失败" },
+        { status: 500 }
+      );
+    }
+
     const entryDateInput = payload.entryDate
-      ? new Date(payload.entryDate)
-      : new Date();
-    const entryDate = dayStart(entryDateInput);
-    const contractSignedDate = dayStart(contractSignedDateInput);
+      ? parseShanghaiDateInputToDate(payload.entryDate)
+      : todayEntryDate;
+    const entryDate = entryDateInput ?? todayEntryDate;
+    const contractSignedDate = contractSignedDateInput;
     const salesName = payload.salesName?.trim() ?? "";
     const operatorName = payload.operatorName?.trim() ?? "";
     const salesCity = resolveSalesCity(salesName, payload.salesCity);
@@ -169,7 +163,7 @@ export async function POST(request: NextRequest) {
       operationMode: payload.operationMode?.trim() ?? "",
       operatorName,
       deliveryPlatform: payload.deliveryPlatform?.trim() ?? "",
-      shopStatus: isWithinNewShopCycle(contractSignedDate, formatShanghaiDate(new Date()))
+      shopStatus: isWithinNewShopCycle(contractSignedDate, formatShanghaiDateKey(new Date()))
         ? "新店"
         : "正常",
     });

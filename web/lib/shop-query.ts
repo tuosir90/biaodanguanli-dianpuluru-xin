@@ -1,4 +1,14 @@
+import {
+  addDaysToDateKey,
+  addMonthsToMonthKey,
+  formatShanghaiDateKey,
+  isDateKey,
+  isMonthKey,
+  shanghaiDateKeyToDate,
+} from "@/lib/shanghai-date";
+
 type ShopFilter = Record<string, unknown>;
+
 export const NEW_SHOP_CYCLE_DAYS = 10;
 
 export function parsePositiveInt(value: string | null, fallback: number) {
@@ -20,43 +30,6 @@ function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function dayStart(dateInput: Date) {
-  const date = new Date(dateInput);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function dayEnd(dateInput: Date) {
-  const date = new Date(dateInput);
-  date.setHours(23, 59, 59, 999);
-  return date;
-}
-
-function formatShanghaiDate(date: Date) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
-}
-
-function addDays(dateKey: string, dayOffset: number) {
-  const matched = dateKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!matched) return "";
-
-  const dateValue = new Date(
-    Date.UTC(Number(matched[1]), Number(matched[2]) - 1, Number(matched[3]))
-  );
-
-  dateValue.setUTCDate(dateValue.getUTCDate() + dayOffset);
-
-  const year = dateValue.getUTCFullYear();
-  const month = String(dateValue.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(dateValue.getUTCDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 export function isWithinNewShopCycle(contractSignedDate: unknown, currentDateKey: string) {
   if (!contractSignedDate || !currentDateKey) return false;
 
@@ -67,8 +40,8 @@ export function isWithinNewShopCycle(contractSignedDate: unknown, currentDateKey
 
   if (Number.isNaN(parsedDate.getTime())) return false;
 
-  const contractDateKey = formatShanghaiDate(parsedDate);
-  const cycleEndDateKey = addDays(contractDateKey, NEW_SHOP_CYCLE_DAYS - 1);
+  const contractDateKey = formatShanghaiDateKey(parsedDate);
+  const cycleEndDateKey = addDaysToDateKey(contractDateKey, NEW_SHOP_CYCLE_DAYS - 1);
   if (!cycleEndDateKey) return false;
 
   return currentDateKey >= contractDateKey && currentDateKey <= cycleEndDateKey;
@@ -128,43 +101,53 @@ export function buildShopFilter(searchParams: URLSearchParams): ShopFilter {
   }
 
   if (selectedDateList.length > 0) {
-    const dates = selectedDateList
-      .map((item) => new Date(item))
-      .filter((date) => !Number.isNaN(date.getTime()))
-      .map((date) => dayStart(date));
+    const dateRanges = selectedDateList
+      .map((item) => {
+        const start = shanghaiDateKeyToDate(item);
+        const nextDay = isDateKey(item) ? addDaysToDateKey(item, 1) : "";
+        const end = nextDay ? shanghaiDateKeyToDate(nextDay) : null;
+        if (!start || !end) return null;
+        return { contractSignedDate: { $gte: start, $lt: end } };
+      })
+      .filter((range): range is { contractSignedDate: { $gte: Date; $lt: Date } } =>
+        Boolean(range)
+      );
 
-    if (dates.length > 0) {
-      filter.contractSignedDate = { $in: dates };
+    if (dateRanges.length > 0) {
+      filter.$or = dateRanges;
     }
   }
 
   if (!filter.contractSignedDate && (startDate || endDate)) {
-    const range: { $gte?: Date; $lte?: Date } = {};
+    const range: { $gte?: Date; $lt?: Date } = {};
 
     if (startDate) {
-      const start = new Date(startDate);
-      if (!Number.isNaN(start.getTime())) {
-        range.$gte = dayStart(start);
+      const start = shanghaiDateKeyToDate(startDate);
+      if (start) {
+        range.$gte = start;
       }
     }
 
     if (endDate) {
-      const end = new Date(endDate);
-      if (!Number.isNaN(end.getTime())) {
-        range.$lte = dayEnd(end);
+      const nextDay = isDateKey(endDate) ? addDaysToDateKey(endDate, 1) : "";
+      const end = nextDay ? shanghaiDateKeyToDate(nextDay) : null;
+      if (end) {
+        range.$lt = end;
       }
     }
 
-    if (range.$gte || range.$lte) {
+    if (range.$gte || range.$lt) {
       filter.contractSignedDate = range;
     }
   }
 
   if (month && !filter.contractSignedDate) {
-    const start = new Date(`${month}-01T00:00:00`);
-    if (!Number.isNaN(start.getTime())) {
-      const end = new Date(start);
-      end.setMonth(end.getMonth() + 1);
+    if (isMonthKey(month)) {
+      const start = shanghaiDateKeyToDate(`${month}-01`);
+      const nextMonth = addMonthsToMonthKey(month, 1);
+      const end = nextMonth ? shanghaiDateKeyToDate(`${nextMonth}-01`) : null;
+      if (!start || !end) return filter;
+
       filter.contractSignedDate = { $gte: start, $lt: end };
     }
   }

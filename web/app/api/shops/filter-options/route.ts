@@ -4,6 +4,7 @@ import {
   buildEmployeeStatusMap,
   filterSalesNameOptions,
 } from "@/features/shops/filter-options";
+import { formatShanghaiDateKey } from "@/lib/shanghai-date";
 import { Shop } from "@/models/shop";
 
 export const maxDuration = 30;
@@ -21,7 +22,7 @@ type EmployeeStatusSummary = {
 };
 
 function toDateString(value: Date | string) {
-  return new Date(value).toISOString().slice(0, 10);
+  return formatShanghaiDateKey(value);
 }
 
 function employeeStatusPipeline(nameField: string, statusField: string) {

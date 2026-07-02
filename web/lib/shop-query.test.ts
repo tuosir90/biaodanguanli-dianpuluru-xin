@@ -77,18 +77,57 @@ describe("buildShopFilter", () => {
     expect(filter.shopStatus).toEqual({ $nin: ["已解约", "无效店铺"] });
   });
 
-  it("builds contractSignedDate range for start and end dates", () => {
+  it("builds contractSignedDate range with Shanghai day boundaries", () => {
     const searchParams = new URLSearchParams({
-      startDate: "2026-03-01",
-      endDate: "2026-03-05",
+      startDate: "2026-07-01",
+      endDate: "2026-07-01",
     });
 
     const filter = buildShopFilter(searchParams);
-    const contractSignedDate = filter.contractSignedDate as { $gte?: Date; $lte?: Date };
+    const contractSignedDate = filter.contractSignedDate as {
+      $gte?: Date;
+      $lt?: Date;
+      $lte?: Date;
+    };
 
     expect(filter.entryDate).toBeUndefined();
-    expect(contractSignedDate.$gte).toBeInstanceOf(Date);
-    expect(contractSignedDate.$lte).toBeInstanceOf(Date);
+    expect(contractSignedDate.$gte?.toISOString()).toBe("2026-06-30T16:00:00.000Z");
+    expect(contractSignedDate.$lt?.toISOString()).toBe("2026-07-01T16:00:00.000Z");
+    expect(contractSignedDate.$lte).toBeUndefined();
+  });
+
+  it("builds month filter with Shanghai month boundaries", () => {
+    const searchParams = new URLSearchParams({ month: "2026-07" });
+
+    const filter = buildShopFilter(searchParams);
+    const contractSignedDate = filter.contractSignedDate as { $gte?: Date; $lt?: Date };
+
+    expect(contractSignedDate.$gte?.toISOString()).toBe("2026-06-30T16:00:00.000Z");
+    expect(contractSignedDate.$lt?.toISOString()).toBe("2026-07-31T16:00:00.000Z");
+  });
+
+  it("builds selected date filters as Shanghai day ranges", () => {
+    const searchParams = new URLSearchParams({ entryDate: "2026-07-01,2026-07-02" });
+
+    const filter = buildShopFilter(searchParams);
+    const selectedDateRanges = filter.$or as Array<{
+      contractSignedDate: { $gte?: Date; $lt?: Date };
+    }>;
+
+    expect(filter.contractSignedDate).toBeUndefined();
+    expect(selectedDateRanges).toHaveLength(2);
+    expect(selectedDateRanges[0].contractSignedDate.$gte?.toISOString()).toBe(
+      "2026-06-30T16:00:00.000Z"
+    );
+    expect(selectedDateRanges[0].contractSignedDate.$lt?.toISOString()).toBe(
+      "2026-07-01T16:00:00.000Z"
+    );
+    expect(selectedDateRanges[1].contractSignedDate.$gte?.toISOString()).toBe(
+      "2026-07-01T16:00:00.000Z"
+    );
+    expect(selectedDateRanges[1].contractSignedDate.$lt?.toISOString()).toBe(
+      "2026-07-02T16:00:00.000Z"
+    );
   });
 });
 

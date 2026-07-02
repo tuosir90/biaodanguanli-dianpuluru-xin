@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import * as xlsx from "xlsx";
 import { connectMongo } from "@/lib/mongodb";
 import { resolveSalesCity } from "@/lib/sales-city";
+import { formatShanghaiDateKey } from "@/lib/shanghai-date";
 import { Shop } from "@/models/shop";
 
 export const runtime = "nodejs";
@@ -11,7 +12,7 @@ function formatDate(value: unknown) {
   if (!value) return "";
   const date = value instanceof Date ? value : new Date(String(value));
   if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
+  return formatShanghaiDateKey(date);
 }
 
 function formatDateTime(value: unknown) {

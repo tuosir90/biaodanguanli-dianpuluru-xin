@@ -18,14 +18,14 @@ describe("buildRecentSignedTerminationMonthRange", () => {
         startDate: "2026-05-01",
         endDate: "2026-06-30",
       },
-      threeMonthSignedRange: {
-        startMonth: "2026-04",
+      twoMonthSignedRange: {
+        startMonth: "2026-05",
         endMonth: "2026-06",
-        startDate: "2026-04-01",
+        startDate: "2026-05-01",
         endDate: "2026-06-30",
       },
-      threeMonthSignedStart: new Date("2026-04-01T00:00:00+08:00"),
-      threeMonthSignedEnd: new Date("2026-07-01T00:00:00+08:00"),
+      twoMonthSignedStart: new Date("2026-05-01T00:00:00+08:00"),
+      twoMonthSignedEnd: new Date("2026-07-01T00:00:00+08:00"),
       terminationDateRange: {
         startDate: "2026-06-01",
         endDate: "2026-06-30",
@@ -122,7 +122,7 @@ describe("buildRecentSignedTerminationReport", () => {
         },
         {
           _id: "shop-8",
-          shopName: "3月签约不计入三个月总数",
+          shopName: "3月签约不计入两个月总数",
           merchantId: "1008",
           deliveryPlatform: "美团餐饮",
           operatorName: "李四",
@@ -135,14 +135,13 @@ describe("buildRecentSignedTerminationReport", () => {
     });
 
     expect(report.totalTerminatedCount).toBe(3);
-    expect(report.threeMonthSignedShopCount).toBe(7);
-    expect(report.operatorCount).toBe(5);
+    expect(report.twoMonthSignedShopCount).toBe(5);
+    expect(report.operatorCount).toBe(4);
     expect(report.operatorStats).toEqual([
-      { operatorName: "张三", count: 2, threeMonthSignedShopCount: 2 },
-      { operatorName: "未分配", count: 1, threeMonthSignedShopCount: 1 },
-      { operatorName: "李四", count: 0, threeMonthSignedShopCount: 2 },
-      { operatorName: "王五", count: 0, threeMonthSignedShopCount: 1 },
-      { operatorName: "赵六", count: 0, threeMonthSignedShopCount: 1 },
+      { operatorName: "张三", count: 2, twoMonthSignedShopCount: 2 },
+      { operatorName: "未分配", count: 1, twoMonthSignedShopCount: 1 },
+      { operatorName: "王五", count: 0, twoMonthSignedShopCount: 1 },
+      { operatorName: "赵六", count: 0, twoMonthSignedShopCount: 1 },
     ]);
     expect(report.shops.map((shop) => shop.merchantId)).toEqual([
       "1002",

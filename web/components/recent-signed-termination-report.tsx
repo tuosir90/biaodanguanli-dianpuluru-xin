@@ -42,14 +42,14 @@ function emptyReport(month: string): RecentSignedTerminationReport {
       startDate: formatDate(previous),
       endDate: formatDate(end),
     },
-    threeMonthSignedRange: {
-      startMonth: formatMonth(new Date(Date.UTC(year, monthIndex - 2, 1))),
+    twoMonthSignedRange: {
+      startMonth: formatMonth(previous),
       endMonth: formatMonth(current),
-      startDate: formatDate(new Date(Date.UTC(year, monthIndex - 2, 1))),
+      startDate: formatDate(previous),
       endDate: formatDate(end),
     },
     totalTerminatedCount: 0,
-    threeMonthSignedShopCount: 0,
+    twoMonthSignedShopCount: 0,
     operatorCount: 0,
     operatorStats: [],
     shops: [],
@@ -195,8 +195,8 @@ export function RecentSignedTerminationReportView() {
               </p>
               <div className="mt-2 text-xs text-text-200">
                 统计月份：{data.month} ｜ 签约范围：{data.signedMonthRange.startMonth} ~{" "}
-                {data.signedMonthRange.endMonth} ｜ 三个月总数范围：
-                {data.threeMonthSignedRange.startMonth} ~ {data.threeMonthSignedRange.endMonth} ｜
+                {data.signedMonthRange.endMonth} ｜ 两个月总数范围：
+                {data.twoMonthSignedRange.startMonth} ~ {data.twoMonthSignedRange.endMonth} ｜
                 解约范围：{data.month}
               </div>
             </div>
@@ -247,9 +247,9 @@ export function RecentSignedTerminationReportView() {
           tone="info"
         />
         <StatCard
-          title="三个月店铺总数"
-          value={`${data.threeMonthSignedShopCount} 家`}
-          description={`${data.threeMonthSignedRange.startMonth} ~ ${data.threeMonthSignedRange.endMonth} 签约`}
+          title="两个月店铺总数"
+          value={`${data.twoMonthSignedShopCount} 家`}
+          description={`${data.twoMonthSignedRange.startMonth} ~ ${data.twoMonthSignedRange.endMonth} 签约`}
           icon={Store}
           tone="info"
         />
@@ -290,7 +290,7 @@ export function RecentSignedTerminationReportView() {
           <div className="border-b border-border bg-bg-100/60 px-5 py-4">
             <h2 className="text-base font-semibold text-text-100">运营汇总</h2>
             <p className="mt-1 text-xs text-text-200">
-              按解约数量从高到低排序，同时展示三个月签约店铺总数
+              按解约数量从高到低排序，同时展示两个月签约店铺总数
             </p>
           </div>
           <Table
@@ -331,8 +331,8 @@ export function RecentSignedTerminationReportView() {
                 ),
               },
               {
-                title: "三个月总数",
-                dataIndex: "threeMonthSignedShopCount",
+                title: "两个月总数",
+                dataIndex: "twoMonthSignedShopCount",
                 align: "right",
                 render: (value: number) => (
                   <span className="font-mono font-semibold text-text-100">{value}</span>

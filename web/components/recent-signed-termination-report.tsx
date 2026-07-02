@@ -100,6 +100,10 @@ function platformLabel(value: string) {
   return value || "未填写";
 }
 
+function formatTerminationRate(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+
 export function RecentSignedTerminationReportView() {
   const initialMonth = useMemo(() => currentMonth(), []);
   const [month, setMonth] = useState(initialMonth);
@@ -336,6 +340,16 @@ export function RecentSignedTerminationReportView() {
                 align: "right",
                 render: (value: number) => (
                   <span className="font-mono font-semibold text-text-100">{value}</span>
+                ),
+              },
+              {
+                title: "解约率",
+                dataIndex: "terminationRate",
+                align: "right",
+                render: (value: number) => (
+                  <span className="font-mono font-semibold text-text-100">
+                    {formatTerminationRate(value)}
+                  </span>
                 ),
               },
             ]}

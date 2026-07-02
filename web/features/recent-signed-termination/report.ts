@@ -42,6 +42,7 @@ export type RecentSignedTerminationReport = {
     operatorName: string;
     count: number;
     twoMonthSignedShopCount: number;
+    terminationRate: number;
   }>;
   shops: RecentSignedTerminationShop[];
 };
@@ -261,6 +262,9 @@ export function buildRecentSignedTerminationReport(params: {
       operatorName,
       count: operatorCountMap.get(operatorName) ?? 0,
       twoMonthSignedShopCount: twoMonthOperatorCountMap.get(operatorName) ?? 0,
+      terminationRate:
+        (operatorCountMap.get(operatorName) ?? 0) /
+        (twoMonthOperatorCountMap.get(operatorName) ?? 1),
     }))
     .sort(
       (left, right) =>

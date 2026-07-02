@@ -178,6 +178,7 @@ contractSignedDate 有值
 | 运营人员 | `operatorName`，为空时显示 `未分配` |
 | 解约数量 | 满足本口径的店铺数 |
 | 两个月店铺总数 | 统计月本月及上一个月签约的店铺总数 |
+| 解约率 | 解约数量 / 两个月店铺总数，按百分比展示，例如 `25%` |
 
 默认排序：
 
@@ -273,6 +274,7 @@ type RecentSignedTerminationStatsResponse = {
     operatorName: string;
     count: number;
     twoMonthSignedShopCount: number;
+    terminationRate: number;
   }>;
   shops: Array<{
     id: string;

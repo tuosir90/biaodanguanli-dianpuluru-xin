@@ -138,10 +138,10 @@ describe("buildRecentSignedTerminationReport", () => {
     expect(report.twoMonthSignedShopCount).toBe(5);
     expect(report.operatorCount).toBe(4);
     expect(report.operatorStats).toEqual([
-      { operatorName: "张三", count: 2, twoMonthSignedShopCount: 2 },
-      { operatorName: "未分配", count: 1, twoMonthSignedShopCount: 1 },
-      { operatorName: "王五", count: 0, twoMonthSignedShopCount: 1 },
-      { operatorName: "赵六", count: 0, twoMonthSignedShopCount: 1 },
+      { operatorName: "张三", count: 2, twoMonthSignedShopCount: 2, terminationRate: 1 },
+      { operatorName: "未分配", count: 1, twoMonthSignedShopCount: 1, terminationRate: 1 },
+      { operatorName: "王五", count: 0, twoMonthSignedShopCount: 1, terminationRate: 0 },
+      { operatorName: "赵六", count: 0, twoMonthSignedShopCount: 1, terminationRate: 0 },
     ]);
     expect(report.shops.map((shop) => shop.merchantId)).toEqual([
       "1002",

@@ -1,5 +1,11 @@
 const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const MONTH_KEY_PATTERN = /^\d{4}-\d{2}$/;
+const shanghaiDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Shanghai",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
 export function isDateKey(value: string) {
   return DATE_KEY_PATTERN.test(value);
@@ -20,12 +26,7 @@ export function formatShanghaiDateKey(value: Date | string | number) {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
 
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
+  return shanghaiDateFormatter.format(date);
 }
 
 export function parseShanghaiDateInputToDate(value: string) {

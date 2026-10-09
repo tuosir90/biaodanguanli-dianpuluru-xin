@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
+import { performance } from "node:perf_hooks";
 import * as xlsx from "xlsx";
 import { connectMongo } from "@/lib/mongodb";
 import { resolveSalesCity } from "@/lib/sales-city";
@@ -6,7 +8,7 @@ import { formatShanghaiDateKey } from "@/lib/shanghai-date";
 import { Shop } from "@/models/shop";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 120;
 
 function formatDate(value: unknown) {
   if (!value) return "";
@@ -23,13 +25,46 @@ function formatDateTime(value: unknown) {
 }
 
 export async function GET() {
-  try {
-    await connectMongo();
+  const requestId = randomUUID();
+  const startedAt = performance.now();
+  let stage = "connect";
+  let stageStartedAt = startedAt;
+  const logStage = (phase: "start" | "complete", details: Record<string, number> = {}) => {
+    console.info(JSON.stringify({
+      event: "shop_export",
+      requestId,
+      stage,
+      phase,
+      elapsedMs: Math.round(performance.now() - startedAt),
+      durationMs: Math.round(performance.now() - stageStartedAt),
+      ...details,
+    }));
+  };
+  const beginStage = (nextStage: string) => {
+    stage = nextStage;
+    stageStartedAt = performance.now();
+    logStage("start");
+  };
 
+  try {
+    logStage("start");
+    await connectMongo();
+    logStage("complete");
+
+    beginStage("read");
     const rows = await Shop.find({})
+      .select({
+        entryDate: 1, shopName: 1, merchantId: 1, wechatGroupName: 1,
+        city: 1, salesName: 1, salesCity: 1, contractSignedDate: 1,
+        operationMode: 1, operatorName: 1, deliveryPlatform: 1,
+        shopStatus: 1, terminationDate: 1, terminationCooperationDays: 1,
+        createdAt: 1, updatedAt: 1,
+      })
       .sort({ entryDate: -1, createdAt: -1 })
       .lean();
+    logStage("complete", { rowCount: rows.length });
 
+    beginStage("format");
     const exportRows = rows.map((item) => ({
       "店铺ID": String(item._id),
       "录入日期": formatDate(item.entryDate),
@@ -52,12 +87,19 @@ export async function GET() {
       "创建时间": formatDateTime(item.createdAt),
       "更新时间": formatDateTime(item.updatedAt),
     }));
+    logStage("complete", { rowCount: exportRows.length });
 
+    beginStage("xlsx");
     const worksheet = xlsx.utils.json_to_sheet(exportRows);
     const workbook = xlsx.utils.book_new();
     xlsx.utils.book_append_sheet(workbook, worksheet, "店铺数据");
 
-    const buffer = xlsx.write(workbook, { type: "buffer", bookType: "xlsx" });
+    const buffer = xlsx.write(workbook, {
+      type: "buffer",
+      bookType: "xlsx",
+      compression: true,
+    });
+    logStage("complete", { bytes: buffer.length });
     const fileName = `shops-all-${new Date().toISOString().slice(0, 10)}.xlsx`;
 
     return new NextResponse(buffer as BodyInit, {
@@ -66,13 +108,23 @@ export async function GET() {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`,
+        "X-Shop-Export-Request-Id": requestId,
       },
     });
   } catch (error) {
+    console.error(JSON.stringify({
+      event: "shop_export",
+      requestId,
+      stage,
+      phase: "error",
+      elapsedMs: Math.round(performance.now() - startedAt),
+      errorType: error instanceof Error ? error.name : "unknown_error",
+    }));
     return NextResponse.json(
       {
         message: "导出店铺数据失败",
-        error: error instanceof Error ? error.message : "unknown_error",
+        error: error instanceof Error ? error.name : "unknown_error",
+        requestId,
       },
       { status: 500 }
     );
